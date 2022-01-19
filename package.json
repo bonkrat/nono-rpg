@@ -33,6 +33,8 @@
     "webpack-merge": "^4.2.2"
   },
   "dependencies": {
+    "crypto-js": "^4.1.1",
+    "lodash": "^4.17.21",
     "phaser": "^3.50.0"
   }
 }

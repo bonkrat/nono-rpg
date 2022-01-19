@@ -1,0 +1,1 @@
+export { puzzles } from "./puzzle";
