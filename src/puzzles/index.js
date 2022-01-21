@@ -1,1 +1,4 @@
-export { puzzles } from "./puzzle";
+import letters from "./small/letters";
+import animals from "./medium/animals";
+
+export const puzzles = [...letters, ...animals];
