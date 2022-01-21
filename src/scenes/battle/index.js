@@ -1,4 +1,5 @@
-import { shuffle } from "lodash";
+import { shuffle, isEqual } from "lodash";
+import generateClues from "./generateClues";
 import Phaser from "phaser";
 import cell from "../../assets/sprites/cell.png";
 import cellSelected from "../../assets/sprites/cell_selected.png";
@@ -91,10 +92,7 @@ class Battle extends Phaser.Scene {
     }
 
     // Add minigrid
-
     this.minigrid = buildMinigrid.call(this, height, scale);
-
-    console.log("minigrid", this.minigrid);
 
     // Print picross puzzle
     this.cellcontainer = this.buildPuzzle(scale);
@@ -127,11 +125,6 @@ class Battle extends Phaser.Scene {
 
     this.player.setVisible(true);
     this.player.currentCell = { x: 0, y: 0 };
-    console.log(
-      "this.cellcontainer position",
-      cellcontainer.x,
-      cellcontainer.y
-    );
     this.player.setPosition(cellcontainer.x, cellcontainer.y);
 
     this.movePlayer = (direction) => {
@@ -150,8 +143,6 @@ class Battle extends Phaser.Scene {
 
     // Player Controls
     this.keys.down.on("down", () => {
-      console.log(this.player.x, this.player.y);
-      console.log(this.player.currentCell);
       if (
         this.player.currentCell.x <
         this.puzzle.puzzles[this.currentPuzzle].height - 1
@@ -194,8 +185,6 @@ class Battle extends Phaser.Scene {
         this.cells[this.player.currentCell.x][this.player.currentCell.y];
       this.setCellHoverStyles(c);
       this.dragging.push(c);
-      //   this.setCellHoverStyles(c);
-      //   this.dragging.push(c);
     });
 
     this.keys.select.on("up", () => {
@@ -217,6 +206,7 @@ class Battle extends Phaser.Scene {
               this.emitter.explode(6, c.x, c.y);
               this.cameras.main.shake(600 / (i + 1), 0.02 / (i + 1));
             }
+            this.setCompletedRowsandColumns();
           },
           onComplete: () => {
             c.setCrop(0, 0, 32, 32);
@@ -231,11 +221,77 @@ class Battle extends Phaser.Scene {
       this.dragging = [];
 
       // Check for solved puzzle
-      this.checkPuzzle(this.cellcontainer);
+      this.checkPuzzle();
     });
   }
 
-  checkPuzzle(cellcontainer) {
+  setCompletedRowsandColumns() {
+    if (!this.isPuzzzleSolved(this.puzzle.puzzles[this.currentPuzzle])) {
+      // Rows first
+      const rowClues = [];
+
+      this.cells.map((row) => {
+        const selected = row.reduce((acc, curr, index) => {
+          if (curr.selected) {
+            acc.push(index);
+          }
+          return acc;
+        }, []);
+        rowClues.push(generateClues(selected));
+      });
+
+      this.puzzle.puzzles[this.currentPuzzle].rowClues.forEach((r, i) => {
+        if (isEqual(r, rowClues[i])) {
+          this.cells[i].forEach((c) => {
+            if (!c.selected) {
+              c.disabled = true;
+              this.setCellDisabledStyles(c, scale);
+            }
+          });
+        } else {
+          this.cells[i].forEach((c) => {
+            if (!c.selected) {
+              c.disabled = false;
+              this.setCellEmptyStyles(c, scale);
+            }
+          });
+        }
+      });
+
+      // Then Columns
+      const colClues = [];
+      for (var i = 0; i < this.puzzle.puzzles[this.currentPuzzle].width; i++) {
+        const colData = this.cells.map((row) => row[i]);
+        const selectedColCell = colData.reduce((acc, curr, index) => {
+          if (curr.selected) {
+            acc.push(index);
+          }
+          return acc;
+        }, []);
+        colClues.push(generateClues(selectedColCell));
+      }
+
+      this.puzzle.puzzles[this.currentPuzzle].colClues.forEach((r, i) => {
+        const colData = this.cells.map((row) => row[i]);
+
+        if (isEqual(r, colClues[i])) {
+          colData.forEach((c) => {
+            if (!c.selected) {
+              this.setCellDisabledStyles(c, scale);
+            }
+          });
+        } else {
+          colData.forEach((c) => {
+            if (!c.selected && !c.disabled) {
+              this.setCellEmptyStyles(c, scale);
+            }
+          });
+        }
+      });
+    }
+  }
+
+  checkPuzzle() {
     if (this.isPuzzzleSolved(this.puzzle.puzzles[this.currentPuzzle])) {
       this.keys.select.removeAllListeners();
       this.player.setVisible(false);
@@ -245,8 +301,11 @@ class Battle extends Phaser.Scene {
 
       // Reset current puzzle
       this.currentPuzzle += 1;
-      this.cellcontainer = this.buildPuzzle(scale);
-      this.resetPlayer(this.cellcontainer);
+
+      this.time.delayedCall(2000, () => {
+        this.cellcontainer = this.buildPuzzle(scale);
+        this.resetPlayer(this.cellcontainer);
+      });
 
       this.time.delayedCall(
         1000,
@@ -393,7 +452,26 @@ class Battle extends Phaser.Scene {
       }
     }
 
+    // Print hint
+    puzz.hint.cells.forEach((c, i) => {
+      const cell =
+        puzz.hint.direction === "col"
+          ? this.cells[i][puzz.hint.index]
+          : this.cells[puzz.hint.index][i];
+
+      if (c.selected) {
+        this.fillCell(cell, i, scale);
+      }
+    });
+
+    this.setCompletedRowsandColumns();
+
     return cellcontainer;
+  }
+
+  fillCell(c, i, scale) {
+    c.selected = true;
+    this.animateSelectCell(c, i, scale);
   }
 
   animateSelectCell(c, index, scale) {
@@ -458,7 +536,13 @@ class Battle extends Phaser.Scene {
   }
 
   setCellHoverStyles(cell, scale = 2) {
-    cell.play(this.getSelectedAnimation()).setAlpha(0.7);
+    cell.play(this.getSelectedAnimation()).setAlpha(0.8);
+    cell.setCrop(1, 1, 30, 30);
+    cell.setScale(scale * 0.8);
+  }
+
+  setCellDisabledStyles(cell, scale = 2) {
+    cell.play(this.getEmptyAnimation()).setAlpha(0.3);
     cell.setCrop(1, 1, 30, 30);
     cell.setScale(scale * 0.8);
   }
@@ -484,7 +568,7 @@ class Battle extends Phaser.Scene {
 
       const dur = k.getDuration() - k.previousDuration;
 
-      if (k.isDown && k.getDuration() > 500 && dur > 100) {
+      if (k.isDown && k.getDuration() > 250 && dur > 100) {
         k.previousDuration = k.getDuration();
         k.emit("down");
       }
