@@ -1,28 +1,33 @@
-import { shuffle, isEqual } from "lodash";
-import generateClues from "./generateClues";
+import sha256 from "crypto-js/sha256";
+import { shuffle } from "lodash";
 import Phaser from "phaser";
 import cell from "../../assets/sprites/cell.png";
 import cellSelected from "../../assets/sprites/cell_selected.png";
 import numbers from "../../assets/sprites/numbers.png";
 import player from "../../assets/sprites/player.png";
-import { puzzles } from "../../puzzles";
-import sha256 from "crypto-js/sha256";
-import animals from "../../puzzles/medium/animals";
-import { buildMinigrid } from "./minigrid";
+import methods from "./methods";
+import karen from "../../assets/sprites/enemies/karen.png";
 
 const width = 800;
 const height = 600;
 const scale = 2;
 
 class Battle extends Phaser.Scene {
-  constructor(puzzle) {
+  constructor(puzzleSet) {
     super();
     this.cells = [];
     this.dragging = []; // array of currently dragged over cells.
-    this.puzzle = puzzle;
+    this.puzzleSet = puzzleSet;
+    this.currentPuzzle = 0;
+    this.puzzle = this.puzzleSet[0];
     this.player;
     this.keys;
+    this.completedPuzzles = [];
     this.puzzleContainers = [];
+
+    for (const method in methods) {
+      this[method] = methods[method].bind(this);
+    }
   }
 
   preload() {
@@ -36,6 +41,11 @@ class Battle extends Phaser.Scene {
         frameWidth: 32,
         frameHeight: 32,
       });
+    });
+
+    this.load.spritesheet("karen", karen, {
+      frameWidth: 128,
+      frameHeight: 182,
     });
   }
 
@@ -69,6 +79,16 @@ class Battle extends Phaser.Scene {
       });
     }
 
+    // Karen animation
+    this.anims.create({
+      key: "karen",
+      frames: this.anims.generateFrameNumbers("karen", {
+        frames: shuffle([0, 1, 2]),
+      }),
+      frameRate: 3,
+      repeat: -1,
+    });
+
     // Player animations
     this.anims.create({
       key: "player",
@@ -91,11 +111,11 @@ class Battle extends Phaser.Scene {
       });
     }
 
-    // Add minigrid
-    this.minigrid = buildMinigrid.call(this, height, scale);
+    // Add minigrids
+    this.minigrids = this.buildMinigrid(height, width, scale, this.puzzleSet);
 
     // Print picross puzzle
-    this.cellcontainer = this.buildPuzzle(scale);
+    this.cellcontainer = this.buildPuzzle(width, height, scale);
 
     // Player
     this.player = this.add
@@ -105,6 +125,12 @@ class Battle extends Phaser.Scene {
       .play("player");
 
     this.player.currentCell = { x: 0, y: 0 };
+
+    // Add Karen
+    // this.add
+    //   .sprite(200, 250)
+    //   .play("karen")
+    //   .setScale(scale * 0.75);
 
     this.resetPlayer(this.cellcontainer);
   }
@@ -145,7 +171,7 @@ class Battle extends Phaser.Scene {
     this.keys.down.on("down", () => {
       if (
         this.player.currentCell.x <
-        this.puzzle.puzzles[this.currentPuzzle].height - 1
+        this.puzzle.puzzles[this.currentPuzzleSection].height - 1
       ) {
         this.movePlayer("down");
         this.player.currentCell.x += 1;
@@ -172,7 +198,7 @@ class Battle extends Phaser.Scene {
     this.keys.right.on("down", () => {
       if (
         this.player.currentCell.y <
-        this.puzzle.puzzles[this.currentPuzzle].width - 1
+        this.puzzle.puzzles[this.currentPuzzleSection].width - 1
       ) {
         this.movePlayer("right");
         this.player.currentCell.y += 1;
@@ -195,6 +221,8 @@ class Battle extends Phaser.Scene {
 
         c.setAlpha(0.5);
 
+        this.setCompletedRowsAndColumns(scale);
+
         this.tweens.add({
           targets: c,
           alpha: 1,
@@ -202,11 +230,12 @@ class Battle extends Phaser.Scene {
           delay: 500 / (i + 1),
           scale: scale,
           onStart: () => {
-            if (c.selected && arr.length > 1) {
+            if (c.selected) {
               this.emitter.explode(6, c.x, c.y);
-              this.cameras.main.shake(600 / (i + 1), 0.02 / (i + 1));
+              if (arr.length > 1) {
+                this.cameras.main.shake(600 / (i + 1), 0.02 / (i + 1));
+              }
             }
-            this.setCompletedRowsandColumns();
           },
           onComplete: () => {
             c.setCrop(0, 0, 32, 32);
@@ -220,253 +249,9 @@ class Battle extends Phaser.Scene {
 
       this.dragging = [];
 
-      // Check for solved puzzle
-      this.checkPuzzle();
+      // Check for solved puzzle and build next if it is solved
+      this.checkPuzzle(width, height, scale);
     });
-  }
-
-  setCompletedRowsandColumns() {
-    if (!this.isPuzzzleSolved(this.puzzle.puzzles[this.currentPuzzle])) {
-      // Rows first
-      const rowClues = [];
-
-      this.cells.map((row) => {
-        const selected = row.reduce((acc, curr, index) => {
-          if (curr.selected) {
-            acc.push(index);
-          }
-          return acc;
-        }, []);
-        rowClues.push(generateClues(selected));
-      });
-
-      this.puzzle.puzzles[this.currentPuzzle].rowClues.forEach((r, i) => {
-        if (isEqual(r, rowClues[i])) {
-          this.cells[i].forEach((c) => {
-            if (!c.selected) {
-              c.disabled = true;
-              this.setCellDisabledStyles(c, scale);
-            }
-          });
-        } else {
-          this.cells[i].forEach((c) => {
-            if (!c.selected) {
-              c.disabled = false;
-              this.setCellEmptyStyles(c, scale);
-            }
-          });
-        }
-      });
-
-      // Then Columns
-      const colClues = [];
-      for (var i = 0; i < this.puzzle.puzzles[this.currentPuzzle].width; i++) {
-        const colData = this.cells.map((row) => row[i]);
-        const selectedColCell = colData.reduce((acc, curr, index) => {
-          if (curr.selected) {
-            acc.push(index);
-          }
-          return acc;
-        }, []);
-        colClues.push(generateClues(selectedColCell));
-      }
-
-      this.puzzle.puzzles[this.currentPuzzle].colClues.forEach((r, i) => {
-        const colData = this.cells.map((row) => row[i]);
-
-        if (isEqual(r, colClues[i])) {
-          colData.forEach((c) => {
-            if (!c.selected) {
-              this.setCellDisabledStyles(c, scale);
-            }
-          });
-        } else {
-          colData.forEach((c) => {
-            if (!c.selected && !c.disabled) {
-              this.setCellEmptyStyles(c, scale);
-            }
-          });
-        }
-      });
-    }
-  }
-
-  checkPuzzle() {
-    if (this.isPuzzzleSolved(this.puzzle.puzzles[this.currentPuzzle])) {
-      this.keys.select.removeAllListeners();
-      this.player.setVisible(false);
-      this.rowClues.map((r) => r.map((c) => c.setVisible(false)));
-      this.colClues.map((r) => r.map((c) => c.setVisible(false)));
-      const solvedContainer = this.cellcontainer;
-
-      // Reset current puzzle
-      this.currentPuzzle += 1;
-
-      this.time.delayedCall(2000, () => {
-        this.cellcontainer = this.buildPuzzle(scale);
-        this.resetPlayer(this.cellcontainer);
-      });
-
-      this.time.delayedCall(
-        1000,
-        (cellcontainer) => {
-          const path = { t: 0, vec: new Phaser.Math.Vector2() };
-          const startPoint = new Phaser.Math.Vector2(
-            cellcontainer.x,
-            cellcontainer.y
-          );
-          var controlPoint1 = new Phaser.Math.Vector2(
-            cellcontainer.x + 300,
-            cellcontainer.y - 300
-          );
-          var controlPoint2 = new Phaser.Math.Vector2(
-            cellcontainer.x + 100,
-            cellcontainer.y - 300
-          );
-          var endPoint = new Phaser.Math.Vector2(
-            this.minigrid.x + 32,
-            this.minigrid.y + 32
-          );
-          var curve = new Phaser.Curves.CubicBezier(
-            startPoint,
-            controlPoint1,
-            controlPoint2,
-            endPoint
-          );
-
-          this.tweens.add({
-            targets: path,
-            t: 1,
-            ease: "Sine.easeInOut",
-            duration: 1000,
-            onUpdate: () => {
-              curve.getPoint(path.t, path.vec);
-              cellcontainer.x = path.vec.x;
-              cellcontainer.y = path.vec.y;
-            },
-          });
-
-          this.tweens.add({
-            targets: cellcontainer,
-            duration: 500,
-            scale: scale / 10,
-            onComplete: () => {
-              this.time.delayedCall(
-                1500,
-                (currentPuzzle, numPuzzles) => {
-                  cellcontainer.x =
-                    this.minigrid.x + this.minigrid.getAt(currentPuzzle - 1).x;
-                  cellcontainer.y =
-                    this.minigrid.y + this.minigrid.getAt(currentPuzzle - 1).y;
-                  this.emitter.explode(32, cellcontainer.x, cellcontainer.y);
-                  this.cameras.main.shake(200);
-                  cellcontainer.getAll().map((c) => !c.selected && c.destroy());
-                },
-                [this.currentPuzzle, this.puzzle.puzzles.length],
-                this
-              );
-            },
-          });
-        },
-        [solvedContainer],
-        this
-      );
-    }
-  }
-
-  buildPuzzle(scale) {
-    if (this.puzzle.puzzles && !this.currentPuzzle) {
-      this.currentPuzzle = 0;
-    }
-
-    const puzz = this.puzzle.puzzles[this.currentPuzzle];
-    const middle = width - puzz.width * 32 * scale;
-    const bottom = height - puzz.height * 32 * scale;
-    const container = this.add.container(middle, bottom);
-    const cellcontainer = this.add.container(container.x, container.y);
-
-    // Create emitter
-    this.particles = this.add.particles("cellSelected");
-    this.minigridparticles = this.add.particles("cellSelected");
-
-    this.emitter = this.particles.createEmitter({
-      frame: 0,
-      lifespan: 1000,
-      speed: 600,
-      //   alpha: { start: 1, end: 0 },
-      gravityY: 2000,
-      scale: { start: scale, end: 0.5 },
-      scale: 1,
-      rotate: { start: 0, end: 360, ease: "Power2" },
-      //   blendMode: "ADD",
-      on: false,
-    });
-
-    cellcontainer.add(this.particles);
-    // minigrid.add(this.minigridparticles);
-
-    // Print row clues
-    this.rowClues = puzz.rowClues.map((clues, i) => {
-      return clues.reverse().map((clue, j) => {
-        const clueSprite = this.add.sprite(
-          -32 * j * scale - 64,
-          32 * i * scale - 32 / 4
-        );
-
-        container.add(clueSprite);
-        clueSprite.play("number_" + clue);
-
-        return clueSprite;
-      });
-    });
-
-    // Print header clues
-    this.colClues = puzz.colClues.map((clues, i) => {
-      return clues.reverse().map((clue, j) => {
-        const clueSprite = this.add.sprite(
-          32 * i * scale,
-          0 - 32 * scale - j * scale * 32 - 32 / 4
-        );
-
-        clueSprite.play("number_" + clue);
-        container.add(clueSprite);
-
-        return clueSprite;
-      });
-    });
-
-    // Print cells
-    for (var i = 0; i < puzz.height; i++) {
-      for (var j = 0; j < puzz.width; j++) {
-        const cell = this.add.sprite(32 * i * scale, 32 * j * scale);
-
-        this.addCell(cell, j, i);
-        cellcontainer.add(cell);
-
-        cell.setInteractive(
-          new Phaser.Geom.Rectangle(4, 4, 24, 24),
-          Phaser.Geom.Rectangle.Contains
-        );
-        cell.setScale(scale);
-        cell.play(this.getEmptyAnimation());
-      }
-    }
-
-    // Print hint
-    puzz.hint.cells.forEach((c, i) => {
-      const cell =
-        puzz.hint.direction === "col"
-          ? this.cells[i][puzz.hint.index]
-          : this.cells[puzz.hint.index][i];
-
-      if (c.selected) {
-        this.fillCell(cell, i, scale);
-      }
-    });
-
-    this.setCompletedRowsandColumns();
-
-    return cellcontainer;
   }
 
   fillCell(c, i, scale) {
