@@ -57,6 +57,7 @@ export default function (scale) {
       if (isEqual(r, colClues[i])) {
         colData.forEach((c) => {
           if (!c.selected) {
+            c.disabled = true;
             this.setCellDisabledStyles(c, scale);
           }
         });

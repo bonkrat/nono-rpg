@@ -1,5 +1,5 @@
 import sha256 from "crypto-js/sha256";
-import { shuffle } from "lodash";
+import { findIndex, findLastIndex, shuffle } from "lodash";
 import Phaser from "phaser";
 import cell from "../../assets/sprites/cell.png";
 import cellSelected from "../../assets/sprites/cell_selected.png";
@@ -127,22 +127,22 @@ class Battle extends Phaser.Scene {
     this.player.currentCell = { x: 0, y: 0 };
 
     // Add Karen
-    // this.add
-    //   .sprite(200, 250)
-    //   .play("karen")
-    //   .setScale(scale * 0.75);
+    this.add
+      .sprite(200, 250)
+      .play("karen")
+      .setScale(scale * 0.75);
 
     this.resetPlayer(this.cellcontainer);
   }
 
-  selectCell = () => {
+  selectCell() {
     if (this.keys.select.isDown) {
       const c =
         this.cells[this.player.currentCell.x][this.player.currentCell.y];
       this.setCellHoverStyles(c);
       this.dragging.push(c);
     }
-  };
+  }
 
   resetPlayer(cellcontainer) {
     for (const k in this.keys) {
@@ -153,59 +153,7 @@ class Battle extends Phaser.Scene {
     this.player.currentCell = { x: 0, y: 0 };
     this.player.setPosition(cellcontainer.x, cellcontainer.y);
 
-    this.movePlayer = (direction) => {
-      this.tweens.add({
-        targets: this.player,
-        duration: 150,
-        ...(["left", "right"].includes(direction) && {
-          x: (direction === "left" ? "-" : "+") + "=" + 32 * scale,
-        }),
-        ...(["up", "down"].includes(direction) && {
-          y: (direction === "up" ? "-" : "+") + "=" + 32 * scale,
-        }),
-        ease: "Bounce",
-      });
-    };
-
     // Player Controls
-    this.keys.down.on("down", () => {
-      if (
-        this.player.currentCell.x <
-        this.puzzle.puzzles[this.currentPuzzleSection].height - 1
-      ) {
-        this.movePlayer("down");
-        this.player.currentCell.x += 1;
-        this.selectCell();
-      }
-    });
-
-    this.keys.up.on("down", () => {
-      if (this.player.currentCell.x > 0) {
-        this.movePlayer("up");
-        this.player.currentCell.x -= 1;
-        this.selectCell();
-      }
-    });
-
-    this.keys.left.on("down", () => {
-      if (this.player.currentCell.y > 0) {
-        this.movePlayer("left");
-        this.player.currentCell.y -= 1;
-        this.selectCell();
-      }
-    });
-
-    this.keys.right.on("down", () => {
-      if (
-        this.player.currentCell.y <
-        this.puzzle.puzzles[this.currentPuzzleSection].width - 1
-      ) {
-        this.movePlayer("right");
-        this.player.currentCell.y += 1;
-        this.selectCell();
-      }
-    });
-
     this.keys.select.on("down", () => {
       const c =
         this.cells[this.player.currentCell.x][this.player.currentCell.y];
@@ -353,14 +301,19 @@ class Battle extends Phaser.Scene {
 
       const dur = k.getDuration() - k.previousDuration;
 
-      if (k.isDown && k.getDuration() > 250 && dur > 100) {
-        k.previousDuration = k.getDuration();
-        k.emit("down");
+      if (k.isUp) {
+        if (k.firedOnce) k.firedOnce = false;
       }
 
-      if (k.isUp) {
-        k.previousDuration = 0;
+      if (k.isDown && !k.firedOnce) {
+        this.movePlayer(k);
+        k.firedOnce = true;
       }
+
+      // if (k.isDown && k.getDuration() > 250 && dur > 100) {
+      //   k.previousDuration = k.getDuration();
+      //   this.movePlayer(k);
+      // }
     });
   }
 }
