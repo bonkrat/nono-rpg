@@ -1,12 +1,12 @@
 import sha256 from "crypto-js/sha256";
-import { findIndex, findLastIndex, shuffle } from "lodash";
+import { shuffle } from "lodash";
 import Phaser from "phaser";
 import cell from "../../assets/sprites/cell.png";
 import cellSelected from "../../assets/sprites/cell_selected.png";
+import letters from "../../assets/sprites/letters.png";
 import numbers from "../../assets/sprites/numbers.png";
 import player from "../../assets/sprites/player.png";
-import methods from "./methods";
-import karen from "../../assets/sprites/enemies/karen.png";
+import methods from "../../helpers";
 
 const width = 800;
 const height = 600;
@@ -23,7 +23,6 @@ class Battle extends Phaser.Scene {
     this.player;
     this.keys;
     this.completedPuzzles = [];
-    this.puzzleContainers = [];
 
     for (const method in methods) {
       this[method] = methods[method].bind(this);
@@ -36,6 +35,7 @@ class Battle extends Phaser.Scene {
       ["cellSelected", cellSelected],
       ["numbers", numbers],
       ["player", player],
+      ["letters", letters],
     ].forEach(([key, url]) => {
       this.load.spritesheet(key, url, {
         frameWidth: 32,
@@ -43,13 +43,14 @@ class Battle extends Phaser.Scene {
       });
     });
 
-    this.load.spritesheet("karen", karen, {
-      frameWidth: 128,
-      frameHeight: 182,
-    });
+    // Load the font face
+    this.loadFontFace();
   }
 
   create() {
+    // Load animations for text
+    this.addFontAnims();
+
     // Setup keyboard controls
     this.keys = this.input.keyboard.addKeys({
       up: Phaser.Input.Keyboard.KeyCodes.W,
@@ -78,16 +79,6 @@ class Battle extends Phaser.Scene {
         repeat: -1,
       });
     }
-
-    // Karen animation
-    this.anims.create({
-      key: "karen",
-      frames: this.anims.generateFrameNumbers("karen", {
-        frames: shuffle([0, 1, 2]),
-      }),
-      frameRate: 3,
-      repeat: -1,
-    });
 
     // Player animations
     this.anims.create({
@@ -126,13 +117,16 @@ class Battle extends Phaser.Scene {
 
     this.player.currentCell = { x: 0, y: 0 };
 
-    // Add Karen
-    this.add
-      .sprite(200, 250)
-      .play("karen")
-      .setScale(scale * 0.75);
-
     this.resetPlayer(this.cellcontainer);
+  }
+
+  addText(text, x, y, scale) {
+    text.split("").map((letter, i) => {
+      this.add
+        .sprite(x + i * (32 * scale), y, letter)
+        .play("letter_" + letter)
+        .setScale(scale);
+    });
   }
 
   selectCell() {

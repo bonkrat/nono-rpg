@@ -1,5 +1,5 @@
 import { isEqual } from "lodash";
-import generateClues from "../generateClues";
+import generateClues from "./generateClues";
 
 export default function (scale) {
   if (!this.isPuzzzleSolved(this.puzzle.puzzles[this.currentPuzzleSection])) {

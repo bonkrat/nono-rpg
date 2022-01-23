@@ -1,4 +1,4 @@
-import { scale } from "../constants";
+import { scale } from "../scenes/battle/constants";
 
 function moveDown() {
   if (

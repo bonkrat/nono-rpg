@@ -1,4 +1,6 @@
-export default function (width, height, scale) {
+import { scale } from "../scenes/battle/constants";
+
+export default function (width, height) {
   if (this.isPuzzzleSolved(this.puzzle.puzzles[this.currentPuzzleSection])) {
     this.keys.select.removeAllListeners();
     this.player.setVisible(false);
@@ -91,7 +93,7 @@ export default function (width, height, scale) {
           onComplete: () => {
             this.time.delayedCall(
               1500,
-              (currentPuzzleSection) => {
+              (currentPuzzleSection, puzzleLength, puzzleName) => {
                 const offset = 5;
                 if (currentPuzzleSection > 0) {
                   cellcontainer.x =
@@ -109,8 +111,22 @@ export default function (width, height, scale) {
 
                 this.emitter.explode(32, cellcontainer.x, cellcontainer.y);
                 this.cameras.main.shake(200);
+
+                if (currentPuzzleSection === puzzleLength) {
+                  minigrid.setVisible(false);
+                  this.addText(
+                    puzzleName,
+                    minigrid.x + minigrid.x / 4,
+                    minigrid.y - 32 + 32 / 2,
+                    scale / 4
+                  );
+                }
               },
-              [currentPuzzleSection, this.puzzle.puzzles.length],
+              [
+                currentPuzzleSection,
+                currentPuzz.puzzles.length,
+                currentPuzz.name,
+              ],
               this
             );
           },
