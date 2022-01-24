@@ -1,13 +1,14 @@
 import { isEqual } from "lodash";
+import type Battle from "../scenes/battle";
 import generateClues from "./generateClues";
 
-export default function (scale) {
+export default function (this: Battle, scale: number) {
   if (!this.isPuzzzleSolved(this.puzzle.puzzles[this.currentPuzzleSection])) {
     // Rows first
-    const rowClues = [];
+    const rowClues: number[][] = [];
 
     this.cells.map((row) => {
-      const selected = row.reduce((acc, curr, index) => {
+      const selected = row.reduce((acc: number[], curr, index) => {
         if (curr.selected) {
           acc.push(index);
         }
@@ -35,14 +36,14 @@ export default function (scale) {
     });
 
     // Then Columns
-    const colClues = [];
+    const colClues: number[][] = [];
     for (
       var i = 0;
       i < this.puzzle.puzzles[this.currentPuzzleSection].width;
       i++
     ) {
       const colData = this.cells.map((row) => row[i]);
-      const selectedColCell = colData.reduce((acc, curr, index) => {
+      const selectedColCell = colData.reduce((acc: number[], curr, index) => {
         if (curr.selected) {
           acc.push(index);
         }

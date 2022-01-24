@@ -1,4 +1,6 @@
-export function isValidPuzzle(puzzle, cells) {
+import { Nonogram, CellSprite } from "../../types/puzzle";
+
+export function isValidPuzzle(puzzle: Nonogram, cells: CellSprite[][]) {
   const { width, height } = puzzle,
     rows = cells.map((row) => row.map((cell) => !!cell?.selected));
   let valid = true;
@@ -36,7 +38,11 @@ export function isValidPuzzle(puzzle, cells) {
  *
  * @param rowIndex {number} This is the number of values in the column to validate up to. Should match the size of the stack of currently generated rows.
  */
-export function isValidOrder(col, columnClues, rowIndex) {
+export function isValidOrder(
+  col: boolean[],
+  columnClues: number[],
+  rowIndex: number
+) {
   // Row index is used to validate that a column is valid up until the current row.
   const column = col.slice(0, rowIndex);
 
@@ -54,7 +60,7 @@ export function isValidOrder(col, columnClues, rowIndex) {
     regexString += "^O{0,}(";
 
     regexString.concat(
-      columnClues.map((clue, index, arr) => {
+      ...columnClues.map((clue, index, arr) => {
         if (index > 0) {
           regexString += `X{0,${clue}}$|X{${clue}}O{1,})`;
           if (index < arr.length - 1) {
@@ -63,6 +69,8 @@ export function isValidOrder(col, columnClues, rowIndex) {
         } else {
           regexString += `X{0,${clue}}$|X{${clue}}O{1,}(`;
         }
+
+        return regexString;
       })
     );
 
@@ -75,7 +83,11 @@ export function isValidOrder(col, columnClues, rowIndex) {
 /**
  * Builds up an array of the currently selected column values.
  */
-export function getColumnValues(rowStack, columnIndex, height) {
+export function getColumnValues(
+  rowStack: boolean[][],
+  columnIndex: number,
+  height: number
+) {
   return Array.from({
     ...rowStack.map((row) => row[columnIndex]),
     length: height,

@@ -1,4 +1,12 @@
-export default function (width, height, scale) {
+import { CellContainer } from "../../types/puzzle";
+import type Battle from "../scenes/battle";
+
+export default function (
+  this: Battle,
+  width: number,
+  height: number,
+  scale: number
+): CellContainer {
   if (this.puzzle.puzzles && !this.currentPuzzleSection) {
     this.currentPuzzleSection = 0;
   }
@@ -7,26 +15,27 @@ export default function (width, height, scale) {
   const middle = width - puzz.width * 32 * scale;
   const bottom = height - puzz.height * 32 * scale;
   const container = this.add.container(middle, bottom);
-  const cellcontainer = this.add.container(container.x, container.y);
+  const cellcontainer = this.add.container(
+    container.x,
+    container.y
+  ) as CellContainer;
 
   // Create emitter
-  this.particles = this.add.particles("cellSelected");
-  this.minigridparticles = this.add.particles("cellSelected");
+  const particles = this.add.particles("cellSelected");
 
-  this.emitter = this.particles.createEmitter({
+  this.emitter = particles.createEmitter({
     frame: 0,
     lifespan: 1000,
     speed: 600,
     //   alpha: { start: 1, end: 0 },
     gravityY: 2000,
     scale: { start: scale, end: 0.5 },
-    scale: 1,
     rotate: { start: 0, end: 360, ease: "Power2" },
     //   blendMode: "ADD",
     on: false,
   });
 
-  cellcontainer.add(this.particles);
+  cellcontainer.add(particles);
   // minigrid.add(this.minigridparticles);
 
   // Print row clues
@@ -34,7 +43,8 @@ export default function (width, height, scale) {
     return clues.reverse().map((clue, j) => {
       const clueSprite = this.add.sprite(
         -32 * j * scale - 64,
-        32 * i * scale - 32 / 4
+        32 * i * scale - 32 / 4,
+        "clue"
       );
 
       container.add(clueSprite);
@@ -49,7 +59,8 @@ export default function (width, height, scale) {
     return clues.reverse().map((clue, j) => {
       const clueSprite = this.add.sprite(
         32 * i * scale,
-        0 - 32 * scale - j * scale * 32 - 32 / 4
+        0 - 32 * scale - j * scale * 32 - 32 / 4,
+        "clue"
       );
 
       clueSprite.play("number_" + clue);
@@ -62,7 +73,7 @@ export default function (width, height, scale) {
   // Print cells
   for (var i = 0; i < puzz.height; i++) {
     for (var j = 0; j < puzz.width; j++) {
-      const cell = this.add.sprite(32 * i * scale, 32 * j * scale);
+      const cell = this.add.sprite(32 * i * scale, 32 * j * scale, "cell");
 
       this.addCell(cell, j, i);
       cellcontainer.add(cell);

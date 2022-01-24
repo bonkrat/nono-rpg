@@ -1,3 +1,5 @@
+import { Puzzle } from "../../../types/puzzle";
+
 export default [
   {
     name: "Duck",
@@ -323,4 +325,4 @@ export default [
       },
     ],
   },
-];
+] as Puzzle[];

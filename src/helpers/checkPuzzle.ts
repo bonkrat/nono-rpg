@@ -1,13 +1,23 @@
+import {
+  CellContainer,
+  CellSprite,
+  MiniGrid,
+  Puzzle,
+} from "../../types/puzzle";
+import Battle from "../scenes/battle";
 import { scale } from "../scenes/battle/constants";
 
-export default function (width, height) {
+export default function (this: Battle, width: number, height: number) {
   if (this.isPuzzzleSolved(this.puzzle.puzzles[this.currentPuzzleSection])) {
-    this.keys.select.removeAllListeners();
+    this.keys?.select.removeAllListeners();
     this.player.setVisible(false);
-    this.rowClues.map((r) => r.map((c) => c.setVisible(false)));
-    this.colClues.map((r) => r.map((c) => c.setVisible(false)));
+    this.rowClues?.map((r) => r.map((c) => c.setVisible(false)));
+    this.colClues?.map((r) => r.map((c) => c.setVisible(false)));
     const solvedContainer = this.cellcontainer;
-    const currentMinigrid = this.minigrids[this.currentPuzzle];
+    let currentMinigrid;
+    if (this.minigrids) {
+      currentMinigrid = this.minigrids[this.currentPuzzle];
+    }
     const currentPuzz = this.puzzleSet[this.currentPuzzle];
     const currentPuzzSection = this.currentPuzzleSection + 1;
 
@@ -47,7 +57,12 @@ export default function (width, height) {
 
     this.time.delayedCall(
       1000,
-      (cellcontainer, minigrid, currentPuzz, currentPuzzleSection) => {
+      (
+        cellcontainer: CellContainer,
+        minigrid: MiniGrid,
+        currentPuzz: Puzzle,
+        currentPuzzleSection: number
+      ) => {
         const path = { t: 0, vec: new Phaser.Math.Vector2() };
         const startPoint = new Phaser.Math.Vector2(
           cellcontainer.x,
@@ -72,7 +87,9 @@ export default function (width, height) {
           endPoint
         );
 
-        cellcontainer.getAll().map((c) => !c.selected && c.destroy());
+        cellcontainer
+          .getAll()
+          .forEach((c: CellSprite) => !c.selected && c.destroy());
 
         this.tweens.add({
           targets: path,
@@ -93,7 +110,11 @@ export default function (width, height) {
           onComplete: () => {
             this.time.delayedCall(
               1500,
-              (currentPuzzleSection, puzzleLength, puzzleName) => {
+              (
+                currentPuzzleSection: number,
+                puzzleLength: number,
+                puzzleName: string
+              ) => {
                 const offset = 5;
                 if (currentPuzzleSection > 0) {
                   cellcontainer.x =
@@ -109,7 +130,7 @@ export default function (width, height) {
                   cellcontainer.y = minigrid.y + minigrid.getAt(0).y + offset;
                 }
 
-                this.emitter.explode(32, cellcontainer.x, cellcontainer.y);
+                this.emitter?.explode(32, cellcontainer.x, cellcontainer.y);
                 this.cameras.main.shake(200);
 
                 if (currentPuzzleSection === puzzleLength) {

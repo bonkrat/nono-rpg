@@ -9,6 +9,6 @@
         ]
       },
       "modules": false
-    }]
+    }, "@babel/preset-typescript"]
   ],
 }

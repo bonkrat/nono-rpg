@@ -1,7 +1,14 @@
-export function buildMinigrid(height, width, scale, puzzleSet) {
+import { MiniGrid, PuzzleSet } from "../../types/puzzle";
+import type Battle from "../scenes/battle";
+
+export function buildMinigrid(
+  this: Battle,
+  ...args: [number, number, number, PuzzleSet]
+): MiniGrid[] {
+  const [height, width, scale, puzzleSet] = args;
   // const margin = (32 * scale * (index + 1)) / 2;
-  const bottomAlign = (x) => x + height - 32 * scale - 32 * scale;
-  const leftAlign = (x) => x + 32;
+  const bottomAlign = (x: number) => x + height - 32 * scale - 32 * scale;
+  const leftAlign = (x: number) => x + 32;
 
   return puzzleSet.map((puzz, index) => {
     const margin = 10 * index;
@@ -12,7 +19,7 @@ export function buildMinigrid(height, width, scale, puzzleSet) {
           margin * this.puzzleSet.length
       ),
       bottomAlign(32)
-    );
+    ) as MiniGrid;
 
     minigrid
       .add(
@@ -20,7 +27,8 @@ export function buildMinigrid(height, width, scale, puzzleSet) {
           const s = this.add
             .sprite(
               i === 0 || i === 2 ? 0 : 32 * (scale / (puzz.puzzles.length / 2)),
-              i === 0 || i === 1 ? 0 : 32 * (scale / (puzz.puzzles.length / 2))
+              i === 0 || i === 1 ? 0 : 32 * (scale / (puzz.puzzles.length / 2)),
+              "cell"
             )
             .setOrigin(0, 0)
             .play(this.getEmptyAnimation());
@@ -36,9 +44,3 @@ export function buildMinigrid(height, width, scale, puzzleSet) {
     return minigrid;
   });
 }
-
-const rightAlign = (x) =>
-  x +
-  (width -
-    (this.puzzleSet.length * 32 * scale +
-      ((this.puzzleSet.length + 1) * (32 * scale)) / 2));

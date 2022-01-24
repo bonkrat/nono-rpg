@@ -3,13 +3,15 @@ import checkPuzzle from "./checkPuzzle";
 import { buildMinigrid } from "./minigrid";
 import { movePlayer } from "./movePlayer";
 import setCompletedRowsAndColumns from "./setCompletedRowsAndColumns";
-import * as textMethods from "./text";
+import { loadFontFace, addFontAnims, addText } from "./text";
 
-export default {
+export {
   buildPuzzle,
   checkPuzzle,
   buildMinigrid,
   setCompletedRowsAndColumns,
   movePlayer,
-  ...textMethods,
+  loadFontFace,
+  addFontAnims,
+  addText,
 };

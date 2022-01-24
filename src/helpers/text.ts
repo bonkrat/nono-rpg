@@ -27,14 +27,29 @@ const letterMap = [
   "x",
   "y",
   "z",
-].reduce((acc, curr, i) => {
-  acc[`${curr}`] = i;
-  acc[`${curr.toUpperCase()}`] = i;
+].reduce(
+  (
+    acc: {
+      [k: string]: number;
+    },
+    curr: string,
+    i: number
+  ) => {
+    acc[curr] = i;
+    acc[curr.toUpperCase()] = i;
 
-  return acc;
-}, {});
+    return acc;
+  },
+  {}
+);
 
-export function addText(text, x, y, scale) {
+export function addText(
+  this: Phaser.Scene,
+  text: string,
+  x: number,
+  y: number,
+  scale: number
+) {
   text.split("").map((letter, i) => {
     this.add
       .sprite(x + i * (32 * scale), y, letter)
@@ -43,7 +58,7 @@ export function addText(text, x, y, scale) {
   });
 }
 
-export function loadFontFace() {
+export function loadFontFace(this: Phaser.Scene) {
   Object.keys(letterMap).forEach((l) => {
     this.load.spritesheet("letter_" + l, letters, {
       frameWidth: 32,
@@ -53,12 +68,12 @@ export function loadFontFace() {
   });
 }
 
-export function addFontAnims() {
-  Object.keys(letterMap).forEach((l) => {
+export function addFontAnims(this: Phaser.Scene) {
+  Object.keys(letterMap).forEach((l: string) => {
     this.anims.create({
       key: "letter_" + l,
       frames: this.anims.generateFrameNumbers("letters", {
-        frames: [0, 1, 2].map((n) => n + Number.parseInt(letterMap[l]) * 3),
+        frames: [0, 1, 2].map((n) => n + letterMap[l] * 3),
       }),
       frameRate: 3,
       repeat: -1,
