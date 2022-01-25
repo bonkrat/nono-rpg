@@ -1,4 +1,4 @@
-import { BattleState, MiniGrid, PuzzleSet } from "../../types/puzzle";
+import { PuzzleSet, MiniGrid } from "../../types/puzzle";
 import type Battle from "../scenes/battle";
 
 export function buildMinigrid(

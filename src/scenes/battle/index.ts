@@ -2,20 +2,21 @@ import sha256 from "crypto-js/sha256";
 import { shuffle } from "lodash";
 import Phaser from "phaser";
 import {
-  BattleKeys,
   BattleStateManager,
+  PuzzleSet,
+  BattleKeys,
   CellContainer,
   CellSprite,
-  Direction,
   Nonogram,
-  Player,
-  PuzzleSet,
+  Coordinates,
+  BattleState,
 } from "../../../types/puzzle";
 import cell from "../../assets/sprites/cell.png";
 import cellSelected from "../../assets/sprites/cell_selected.png";
 import letters from "../../assets/sprites/letters.png";
 import numbers from "../../assets/sprites/numbers.png";
 import player from "../../assets/sprites/player.png";
+import { CellState } from "../../common";
 import {
   addFontAnims,
   buildMinigrid,
@@ -151,36 +152,40 @@ class Battle extends Phaser.Scene {
       .play("player");
 
     this.battleState.events.on("changedata-player", (scene: Battle) => {
-      const {
-        player: { x, y },
-        cellContainer,
-      } = scene.battleState.values;
+      const { player, cellContainer, cells, dragging } =
+        scene.battleState.getAll();
 
       this.tweens.add({
         targets: this.playerSprite,
         duration: 150,
-        x: cellContainer.x + y * 32 * scale,
-        y: cellContainer.y + x * 32 * scale,
+        x: cellContainer.x + player.y * 32 * scale,
+        y: cellContainer.y + player.x * 32 * scale,
         ease: "Bounce",
-        onComplete: () => this.selectCell(),
+        onComplete: () =>
+          this.selectCell({
+            player,
+            cells,
+            dragging,
+          } as BattleState),
       });
     });
 
     resetPlayer(this, cellcontainer);
   }
 
-  selectCell() {
-    const { player, cells, dragging } = this.battleState.values;
-
+  selectCell({ player, cells, dragging }: BattleState) {
     if (this.keys?.select?.isDown) {
       const c = cells[player.x][player.y];
       this.setCellHoverStyles(c);
-      this.battleState.set("dragging", dragging.concat(c));
+
+      if (!dragging.includes(c)) {
+        this.battleState.set("dragging", dragging.concat(c));
+      }
     }
   }
 
   fillCell(c: CellSprite, index: number, scale: number) {
-    c.selected = true;
+    c.setState(CellState.selected);
     this.animateSelectCell(c, index, scale);
   }
 
@@ -194,14 +199,18 @@ class Battle extends Phaser.Scene {
       delay: 500 / (index + 1),
       scale: scale,
       onStart: () => {
-        if (c.selected) {
+        if (c.state === CellState.selected) {
           this.emitter?.explode(6, c.x, c.y);
           this.cameras.main.shake(600 / (index + 1), 0.02 / (index + 1));
         }
       },
     });
 
-    c.play(c.selected ? this.getSelectedAnimation() : this.getEmptyAnimation());
+    c.play(
+      c.state === CellState.selected
+        ? this.getSelectedAnimation()
+        : this.getEmptyAnimation()
+    );
   }
 
   isPuzzzleSolved(puzz: Nonogram) {
@@ -210,7 +219,11 @@ class Battle extends Phaser.Scene {
     let result = "";
     for (var i = 0; i < height; i++) {
       for (var j = 0; j < width; j++) {
-        if (cells[i] && cells[i][j] && cells[i][j].selected) {
+        if (
+          cells[i] &&
+          cells[i][j] &&
+          cells[i][j].state === CellState.selected
+        ) {
           result += `${i}${j}`;
         }
       }
@@ -220,7 +233,7 @@ class Battle extends Phaser.Scene {
   }
 
   setCellStyle(cell: CellSprite, scale = 2) {
-    cell.selected
+    cell.state === CellState.selected
       ? this.setCellSelectedStyles(cell, scale)
       : this.setCellEmptyStyles(cell, scale);
   }

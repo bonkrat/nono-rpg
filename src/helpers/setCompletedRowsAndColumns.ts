@@ -1,5 +1,6 @@
 import { isEqual } from "lodash";
 import { BattleStateManager } from "../../types/puzzle";
+import { CellState } from "../common";
 import type Battle from "../scenes/battle";
 import generateClues from "./generateClues";
 
@@ -16,7 +17,7 @@ export default function (
 
     cells.map((row) => {
       const selected = row.reduce((acc: number[], curr, index) => {
-        if (curr.selected) {
+        if (curr.state === CellState.selected) {
           acc.push(index);
         }
         return acc;
@@ -27,15 +28,15 @@ export default function (
     currentNonogram.rowClues.forEach((r, i) => {
       if (isEqual(r, rowClues[i])) {
         cells[i].forEach((c) => {
-          if (!c.selected) {
-            c.disabled = true;
+          if (c.state !== CellState.selected) {
+            c.setState(CellState.disabled);
             scene.setCellDisabledStyles(c, scale);
           }
         });
       } else {
         cells[i].forEach((c) => {
-          if (!c.selected) {
-            c.disabled = false;
+          if (c.state !== CellState.selected) {
+            c.setState(CellState.disabled);
             scene.setCellEmptyStyles(c, scale);
           }
         });
@@ -48,7 +49,7 @@ export default function (
     for (var i = 0; i < currentNonogram.width; i++) {
       const colData = cells.map((row) => row[i]);
       const selectedColCell = colData.reduce((acc: number[], curr, index) => {
-        if (curr.selected) {
+        if (curr.state === CellState.selected) {
           acc.push(index);
         }
         return acc;
@@ -61,14 +62,14 @@ export default function (
 
       if (isEqual(r, colClues[i])) {
         colData.forEach((c) => {
-          if (!c.selected) {
-            c.disabled = true;
+          if (c.state !== CellState.selected) {
+            c.setState(CellState.disabled);
             scene.setCellDisabledStyles(c, scale);
           }
         });
       } else {
         colData.forEach((c) => {
-          if (!c.selected && !c.disabled) {
+          if (![CellState.disabled, CellState.selected].includes(c.state)) {
             scene.setCellEmptyStyles(c, scale);
           }
         });

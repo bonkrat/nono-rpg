@@ -1,8 +1,11 @@
 import { Nonogram, CellSprite } from "../../types/puzzle";
+import { CellState } from "../common";
 
 export function isValidPuzzle(puzzle: Nonogram, cells: CellSprite[][]) {
   const { width, height } = puzzle,
-    rows = cells.map((row) => row.map((cell) => !!cell?.selected));
+    rows = cells.map((row) =>
+      row.map((cell) => cell?.state == CellState.selected)
+    );
   let valid = true;
 
   // Validate each column

@@ -1,4 +1,4 @@
-import { BattleStateManager, Nonogram, Player } from "../../types/puzzle";
+import { Player, Nonogram, BattleStateManager } from "../../types/puzzle";
 import Battle from "../scenes/battle";
 
 function moveDown({ x, y }: Player, currentNonogram: Nonogram) {

@@ -1,5 +1,6 @@
 import { setCompletedRowsAndColumns, checkPuzzle } from ".";
 import { CellContainer, Player } from "../../types/puzzle";
+import { CellState } from "../common";
 import Battle from "../scenes/battle";
 import { scale, width, height } from "../scenes/battle/constants";
 
@@ -26,6 +27,10 @@ export function resetPlayer(scene: Battle, cellcontainer: CellContainer) {
 
     const c = cells[x][y];
     scene.setCellHoverStyles(c);
+    scene.battleState.set(
+      "dragging",
+      scene.battleState.values.dragging.concat(c)
+    );
   });
 
   scene.keys?.select.on("up", () => {
@@ -33,8 +38,15 @@ export function resetPlayer(scene: Battle, cellcontainer: CellContainer) {
 
     dragging.map((c, i, arr) => {
       // Only one in the dragged cells, so just inverse it!
-      c.selected = arr.length > 1 ? true : !c.selected;
-      c.dragging = false;
+      if (arr.length > 1) {
+        c.setState(CellState.selected);
+      } else {
+        c.setState(
+          c.state === CellState.selected
+            ? CellState.disabled
+            : CellState.selected
+        );
+      }
 
       c.setAlpha(0.5);
 
@@ -47,7 +59,7 @@ export function resetPlayer(scene: Battle, cellcontainer: CellContainer) {
         delay: 500 / (i + 1),
         scale: scale,
         onStart: () => {
-          if (c.selected) {
+          if (c.state === CellState.selected) {
             scene.emitter?.explode(6, c.x, c.y);
             if (arr.length > 1) {
               scene.cameras.main.shake(600 / (i + 1), 0.02 / (i + 1));
@@ -60,7 +72,9 @@ export function resetPlayer(scene: Battle, cellcontainer: CellContainer) {
       });
 
       c.play(
-        c.selected ? scene.getSelectedAnimation() : scene.getEmptyAnimation()
+        c.state === CellState.selected
+          ? scene.getSelectedAnimation()
+          : scene.getEmptyAnimation()
       );
     });
 

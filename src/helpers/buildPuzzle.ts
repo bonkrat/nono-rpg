@@ -88,7 +88,7 @@ export default function (
         cells[j] = [];
       }
 
-      cells[j][i] = cell;
+      cells[j][i] = cell as CellSprite;
 
       cellContainer.add(cell);
 

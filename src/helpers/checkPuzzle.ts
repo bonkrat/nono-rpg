@@ -2,10 +2,12 @@ import { addText, buildPuzzle, resetPlayer } from ".";
 import {
   BattleStateManager,
   CellContainer,
-  CellSprite,
   MiniGrid,
   Puzzle,
+  CellSprite,
 } from "../../types/puzzle";
+import { CellState } from "../common";
+
 import Battle from "../scenes/battle";
 import { scale } from "../scenes/battle/constants";
 
@@ -125,7 +127,9 @@ export default function (
 
         cellcontainer
           .getAll()
-          .forEach((c: CellSprite) => !c.selected && c.destroy());
+          .forEach(
+            (c: CellSprite) => c.state !== CellState.selected && c.destroy()
+          );
 
         scene.tweens.add({
           targets: path,

@@ -1,8 +1,6 @@
 export interface Cell {
-  disabled?: boolean;
-  selected?: boolean;
-  dragging?: boolean;
-  color?: string;
+  selected: boolean;
+  color: string;
 }
 
 export interface Nonogram {
@@ -24,10 +22,12 @@ export interface Puzzle {
 }
 
 export type PuzzleSet = Puzzle[];
+
 export interface CellSprite
   extends Phaser.GameObjects.GameObject,
-    Phaser.GameObjects.Sprite,
-    Cell {}
+    Phaser.GameObjects.Sprite {
+  state: CellState;
+}
 
 export interface CellContainer extends Phaser.GameObjects.Container {
   getAt(index: number): CellSprite;
@@ -39,10 +39,12 @@ export interface CellContainer extends Phaser.GameObjects.Container {
   ): CellSprite[];
 }
 
-export interface Player {
+export interface Coordinates {
   x: number;
   y: number;
 }
+
+export interface Player extends Coordinates {}
 
 type BattleKey = Phaser.Input.Keyboard.Key & {
   previousDuration?: number;
