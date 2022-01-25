@@ -1,8 +1,8 @@
-import { MiniGrid, PuzzleSet } from "../../types/puzzle";
+import { BattleState, MiniGrid, PuzzleSet } from "../../types/puzzle";
 import type Battle from "../scenes/battle";
 
 export function buildMinigrid(
-  this: Battle,
+  scene: Battle,
   ...args: [number, number, number, PuzzleSet]
 ): MiniGrid[] {
   const [height, width, scale, puzzleSet] = args;
@@ -12,11 +12,11 @@ export function buildMinigrid(
 
   return puzzleSet.map((puzz, index) => {
     const margin = 10 * index;
-    const minigrid = this.add.container(
+    const minigrid = scene.add.container(
       leftAlign(
-        this.puzzleSet.length * scale +
+        puzzleSet.length * scale +
           32 * scale * index +
-          margin * this.puzzleSet.length
+          margin * scene.puzzleSet.length
       ),
       bottomAlign(32)
     ) as MiniGrid;
@@ -24,14 +24,14 @@ export function buildMinigrid(
     minigrid
       .add(
         puzz.puzzles.map((p, i) => {
-          const s = this.add
+          const s = scene.add
             .sprite(
               i === 0 || i === 2 ? 0 : 32 * (scale / (puzz.puzzles.length / 2)),
               i === 0 || i === 1 ? 0 : 32 * (scale / (puzz.puzzles.length / 2)),
               "cell"
             )
             .setOrigin(0, 0)
-            .play(this.getEmptyAnimation());
+            .play(scene.getEmptyAnimation());
 
           puzz.puzzles.length > 1
             ? s.setScale(scale / (puzz.puzzles.length / 2))

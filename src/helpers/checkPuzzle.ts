@@ -1,4 +1,6 @@
+import { addText, buildPuzzle, resetPlayer } from ".";
 import {
+  BattleStateManager,
   CellContainer,
   CellSprite,
   MiniGrid,
@@ -7,55 +9,89 @@ import {
 import Battle from "../scenes/battle";
 import { scale } from "../scenes/battle/constants";
 
-export default function (this: Battle, width: number, height: number) {
-  if (this.isPuzzzleSolved(this.puzzle.puzzles[this.currentPuzzleSection])) {
-    this.keys?.select.removeAllListeners();
-    this.player.setVisible(false);
-    this.rowClues?.map((r) => r.map((c) => c.setVisible(false)));
-    this.colClues?.map((r) => r.map((c) => c.setVisible(false)));
-    const solvedContainer = this.cellcontainer;
+export default function (
+  scene: Battle,
+  battleState: BattleStateManager,
+  width: number,
+  height: number
+) {
+  const {
+    puzzle,
+    currentPuzzleSection,
+    currentNonogram,
+    player,
+    rowClues,
+    completedPuzzles,
+    currentPuzzleIndex,
+    colClues,
+    cellContainer,
+    minigrids,
+  } = battleState.values;
+
+  if (scene.isPuzzzleSolved(currentNonogram)) {
+    scene.keys?.select.removeAllListeners();
+    scene.playerSprite.setVisible(false);
+    rowClues?.map((r) => r.map((c) => c.setVisible(false)));
+    colClues?.map((r) => r.map((c) => c.setVisible(false)));
+    const solvedContainer = cellContainer;
     let currentMinigrid;
-    if (this.minigrids) {
-      currentMinigrid = this.minigrids[this.currentPuzzle];
+    if (minigrids) {
+      currentMinigrid = minigrids[currentPuzzleIndex];
     }
-    const currentPuzz = this.puzzleSet[this.currentPuzzle];
-    const currentPuzzSection = this.currentPuzzleSection + 1;
+    const currentPuzz = scene.puzzleSet[currentPuzzleIndex];
+    const currentPuzzSection = currentPuzzleSection + 1;
 
     // Reset current puzzle
     if (currentPuzzSection === currentPuzz.puzzles.length) {
-      this.currentPuzzleSection = 0;
-      this.completedPuzzles.push(this.currentPuzzle);
+      battleState.set({
+        currentPuzzleSection: 0,
+        completedPuzzles: [...completedPuzzles, currentPuzzleIndex],
+      });
 
-      if (this.completedPuzzles.length === this.puzzleSet.length) {
+      if (completedPuzzles.length === scene.puzzleSet.length) {
         console.log("BATTLE OVER!");
       }
 
-      const unfinishedPuzzlesIndexes = this.puzzleSet
+      const unfinishedPuzzlesIndexes = scene.puzzleSet
         .map((p, i) => i)
-        .filter((p, i) => !this.completedPuzzles.includes(i));
+        .filter((p, i) => !completedPuzzles.includes(i));
 
       const randomPuzzleIndex =
         unfinishedPuzzlesIndexes[
           Math.floor(Math.random() * unfinishedPuzzlesIndexes.length)
         ];
 
-      this.puzzle = this.puzzleSet[randomPuzzleIndex];
-      this.currentPuzzle = randomPuzzleIndex;
+      battleState.set({
+        puzzle: scene.puzzleSet[randomPuzzleIndex],
+        currentPuzzleIndex: randomPuzzleIndex,
+        currentNonogram: scene.puzzleSet[randomPuzzleIndex].puzzles[0],
+      });
     } else {
-      this.currentPuzzleSection += 1;
+      battleState.set({
+        currentPuzzleSection: battleState.values.currentPuzzleSection + 1,
+        currentNonogram:
+          battleState.values.puzzle.puzzles[currentPuzzleSection + 1],
+      });
     }
 
-    this.time.delayedCall(
+    scene.time.delayedCall(
       1000,
       () => {
-        this.cellcontainer = this.buildPuzzle(width, height, scale);
-        this.resetPlayer(this.cellcontainer);
+        const cellContainer = buildPuzzle(
+          scene,
+          scene.battleState,
+          width,
+          height,
+          scale
+        );
+        scene.battleState.set({ cellContainer });
+        resetPlayer(scene, cellContainer);
       },
       [],
-      this
+      scene
     );
 
-    this.time.delayedCall(
+    scene.time.delayedCall(
       1000,
       (
         cellcontainer: CellContainer,
@@ -91,7 +127,7 @@ export default function (this: Battle, width: number, height: number) {
           .getAll()
           .forEach((c: CellSprite) => !c.selected && c.destroy());
 
-        this.tweens.add({
+        scene.tweens.add({
           targets: path,
           t: 1,
           ease: "Sine.easeInOut",
@@ -103,12 +139,12 @@ export default function (this: Battle, width: number, height: number) {
           },
         });
 
-        this.tweens.add({
+        scene.tweens.add({
           targets: cellcontainer,
           duration: 500,
           scale: scale / 10 / Math.sqrt(currentPuzz.puzzles.length),
           onComplete: () => {
-            this.time.delayedCall(
+            scene.time.delayedCall(
               1500,
               (
                 currentPuzzleSection: number,
@@ -130,12 +166,13 @@ export default function (this: Battle, width: number, height: number) {
                   cellcontainer.y = minigrid.y + minigrid.getAt(0).y + offset;
                 }
 
-                this.emitter?.explode(32, cellcontainer.x, cellcontainer.y);
-                this.cameras.main.shake(200);
+                scene.emitter?.explode(32, cellcontainer.x, cellcontainer.y);
+                scene.cameras.main.shake(200);
 
                 if (currentPuzzleSection === puzzleLength) {
                   minigrid.setVisible(false);
-                  this.addText(
+                  addText(
+                    scene,
                     puzzleName,
                     minigrid.x + minigrid.x / 4,
                     minigrid.y - 32 + 32 / 2,
@@ -148,13 +185,13 @@ export default function (this: Battle, width: number, height: number) {
                 currentPuzz.puzzles.length,
                 currentPuzz.name,
               ],
-              this
+              scene
             );
           },
         });
       },
       [solvedContainer, currentMinigrid, currentPuzz, currentPuzzSection],
-      this
+      scene
     );
   }
 }

@@ -1,29 +1,34 @@
-import { CellContainer } from "../../types/puzzle";
+import { setCompletedRowsAndColumns } from ".";
+import {
+  BattleStateManager,
+  CellContainer,
+  CellSprite,
+} from "../../types/puzzle";
 import type Battle from "../scenes/battle";
 
 export default function (
-  this: Battle,
+  scene: Battle,
+  battleState: BattleStateManager,
   width: number,
   height: number,
   scale: number
 ): CellContainer {
-  if (this.puzzle.puzzles && !this.currentPuzzleSection) {
-    this.currentPuzzleSection = 0;
-  }
+  const { puzzle, currentPuzzleSection } = battleState.values;
 
-  const puzz = this.puzzle.puzzles[this.currentPuzzleSection];
+  const puzz = puzzle.puzzles[currentPuzzleSection];
   const middle = width - puzz.width * 32 * scale;
   const bottom = height - puzz.height * 32 * scale;
-  const container = this.add.container(middle, bottom);
-  const cellcontainer = this.add.container(
+
+  const container = scene.add.container(middle, bottom);
+  const cellContainer = scene.add.container(
     container.x,
     container.y
   ) as CellContainer;
 
   // Create emitter
-  const particles = this.add.particles("cellSelected");
+  const particles = scene.add.particles("cellSelected");
 
-  this.emitter = particles.createEmitter({
+  scene.emitter = particles.createEmitter({
     frame: 0,
     lifespan: 1000,
     speed: 600,
@@ -35,67 +40,80 @@ export default function (
     on: false,
   });
 
-  cellcontainer.add(particles);
+  cellContainer.add(particles);
   // minigrid.add(this.minigridparticles);
 
   // Print row clues
-  this.rowClues = puzz.rowClues.map((clues, i) => {
-    return clues.reverse().map((clue, j) => {
-      const clueSprite = this.add.sprite(
-        -32 * j * scale - 64,
-        32 * i * scale - 32 / 4,
-        "clue"
-      );
+  battleState.set({
+    rowClues: puzz.rowClues.map((clues, i) => {
+      return clues.reverse().map((clue, j) => {
+        const clueSprite = scene.add.sprite(
+          -32 * j * scale - 64,
+          32 * i * scale - 32 / 4,
+          "clue"
+        );
 
-      container.add(clueSprite);
-      clueSprite.play("number_" + clue);
+        container.add(clueSprite);
+        clueSprite.play("number_" + clue);
 
-      return clueSprite;
-    });
+        return clueSprite;
+      });
+    }),
   });
 
   // Print header clues
-  this.colClues = puzz.colClues.map((clues, i) => {
-    return clues.reverse().map((clue, j) => {
-      const clueSprite = this.add.sprite(
-        32 * i * scale,
-        0 - 32 * scale - j * scale * 32 - 32 / 4,
-        "clue"
-      );
+  battleState.set({
+    colClues: puzz.colClues.map((clues, i) => {
+      return clues.reverse().map((clue, j) => {
+        const clueSprite = scene.add.sprite(
+          32 * i * scale,
+          0 - 32 * scale - j * scale * 32 - 32 / 4,
+          "clue"
+        );
 
-      clueSprite.play("number_" + clue);
-      container.add(clueSprite);
+        clueSprite.play("number_" + clue);
+        container.add(clueSprite);
 
-      return clueSprite;
-    });
+        return clueSprite;
+      });
+    }),
   });
 
   // Print cells
+  let cells: CellSprite[][] = [];
   for (var i = 0; i < puzz.height; i++) {
     for (var j = 0; j < puzz.width; j++) {
-      const cell = this.add.sprite(32 * i * scale, 32 * j * scale, "cell");
+      const cell = scene.add.sprite(32 * i * scale, 32 * j * scale, "cell");
+      if (!cells[j]) {
+        cells[j] = [];
+      }
 
-      this.addCell(cell, j, i);
-      cellcontainer.add(cell);
+      cells[j][i] = cell;
+
+      cellContainer.add(cell);
 
       cell.setScale(scale);
-      cell.play(this.getEmptyAnimation());
+      cell.play(scene.getEmptyAnimation());
     }
   }
+
+  battleState.set("cells", cells);
 
   // Print hint
   puzz.hint?.cells.forEach((c, i) => {
     const cell =
       puzz.hint.direction === "col"
-        ? this.cells[i][puzz.hint.index]
-        : this.cells[puzz.hint.index][i];
+        ? cells[i][puzz.hint.index]
+        : cells[puzz.hint.index][i];
 
     if (c.selected) {
-      this.fillCell(cell, i, scale);
+      scene.fillCell(cell, i, scale);
     }
   });
 
-  this.setCompletedRowsAndColumns(scale);
+  setCompletedRowsAndColumns(scene, battleState, scale);
 
-  return cellcontainer;
+  battleState.set({ cellContainer });
+
+  return cellContainer;
 }

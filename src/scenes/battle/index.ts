@@ -3,11 +3,10 @@ import { shuffle } from "lodash";
 import Phaser from "phaser";
 import {
   BattleKeys,
+  BattleStateManager,
   CellContainer,
   CellSprite,
-  MiniGrid,
   Nonogram,
-  Puzzle,
   PuzzleSet,
 } from "../../../types/puzzle";
 import cell from "../../assets/sprites/cell.png";
@@ -17,13 +16,11 @@ import numbers from "../../assets/sprites/numbers.png";
 import player from "../../assets/sprites/player.png";
 import {
   addFontAnims,
-  addText,
   buildMinigrid,
   buildPuzzle,
-  checkPuzzle,
   loadFontFace,
   movePlayer,
-  setCompletedRowsAndColumns,
+  resetPlayer,
 } from "../../helpers";
 
 const width = 800;
@@ -31,41 +28,18 @@ const height = 600;
 const scale = 2;
 
 class Battle extends Phaser.Scene {
-  protected cells: CellSprite[][];
-  private dragging: CellSprite[];
-  protected puzzleSet: PuzzleSet;
-  protected currentPuzzle: number;
-  protected puzzle: Puzzle;
-  protected minigrids?: MiniGrid[];
-  protected player: any;
-  protected keys?: BattleKeys;
-  protected cellcontainer?: CellContainer;
-  protected completedPuzzles: number[];
+  public battleState!: BattleStateManager;
+  public puzzleSet: PuzzleSet;
+  public playerSprite!: Phaser.GameObjects.Sprite;
+  public keys?: BattleKeys;
   public emitter?: Phaser.GameObjects.Particles.ParticleEmitter;
-  public buildPuzzle = buildPuzzle.bind(this);
-  public checkPuzzle = checkPuzzle.bind(this);
-  public setCompletedRowsAndColumns = setCompletedRowsAndColumns.bind(this);
-  public buildMinigrid = buildMinigrid.bind(this);
-  public movePlayer = movePlayer.bind(this);
-  public loadFontFace = loadFontFace.bind(this);
-  public addFontAnims = addFontAnims.bind(this);
-  public addText = addText.bind(this);
-  protected currentPuzzleSection = 0;
-  protected rowClues?: Phaser.GameObjects.Sprite[][];
-  protected colClues?: Phaser.GameObjects.Sprite[][];
 
   constructor(
     config: Phaser.Types.Scenes.SettingsConfig,
     puzzleSet: PuzzleSet
   ) {
     super(config);
-    this.cells = [];
-    this.dragging = []; // array of currently dragged over cells.
     this.puzzleSet = puzzleSet;
-    this.currentPuzzle = 0;
-    this.puzzle = this.puzzleSet[0];
-    this.player = {};
-    this.completedPuzzles = [];
   }
 
   preload() {
@@ -83,12 +57,22 @@ class Battle extends Phaser.Scene {
     });
 
     // Load the font face
-    this.loadFontFace();
+    loadFontFace(this);
   }
 
   create() {
+    this.battleState.set({
+      cells: [],
+      dragging: [],
+      puzzle: this.puzzleSet[0],
+      currentNonogram: this.puzzleSet[0].puzzles[0],
+      currentPuzzleSection: 0,
+      currentPuzzleIndex: 0,
+      completedPuzzles: [],
+    });
+
     // Load animations for text
-    this.addFontAnims();
+    addFontAnims(this);
 
     // Setup keyboard controls
     this.keys = this.input.keyboard.addKeys({
@@ -142,96 +126,40 @@ class Battle extends Phaser.Scene {
     }
 
     // Add minigrids
-    this.minigrids = this.buildMinigrid(height, width, scale, this.puzzleSet);
+    this.battleState.set(
+      "minigrids",
+      buildMinigrid(this, height, width, scale, this.puzzleSet)
+    );
 
     // Print picross puzzle
-    this.cellcontainer = this.buildPuzzle(
+    const cellcontainer = buildPuzzle(
+      this,
+      this.battleState,
       width,
       height,
       scale
     ) as CellContainer;
 
     // Player
-    if (this.cellcontainer) {
-      this.player = this.add
-        .sprite(this.cellcontainer.x, this.cellcontainer.y, "player")
-        .setScale(scale * 1.5)
-        .setTint(0x408abd)
-        .play("player");
+    this.playerSprite = this.add
+      .sprite(cellcontainer.x, cellcontainer.y, "player")
+      .setScale(scale * 1.5)
+      .setTint(0x408abd)
+      .play("player");
 
-      this.player.currentCell = { x: 0, y: 0 };
+    this.battleState.set("player", { currentCell: { x: 0, y: 0 } });
 
-      this.resetPlayer(this.cellcontainer);
-    } else {
-      throw new Error("ERROR: MISSING CELL CONTAINER");
-    }
+    resetPlayer(this, cellcontainer);
   }
 
   selectCell() {
+    const { player, cells, dragging } = this.battleState.values;
+
     if (this.keys?.select?.isDown) {
-      const c =
-        this.cells[this.player.currentCell.x][this.player.currentCell.y];
+      const c = cells[player.currentCell.x][player.currentCell.y];
       this.setCellHoverStyles(c);
-      this.dragging.push(c);
+      dragging.push(c);
     }
-  }
-
-  resetPlayer(cellcontainer: CellContainer) {
-    for (const k in this?.keys) {
-      this.keys[k].removeAllListeners();
-    }
-
-    this.player.setVisible(true);
-    this.player.currentCell = { x: 0, y: 0 };
-    this.player.setPosition(cellcontainer.x, cellcontainer.y);
-
-    // Player Controls
-    this.keys?.select.on("down", () => {
-      const c =
-        this.cells[this.player.currentCell.x][this.player.currentCell.y];
-      this.setCellHoverStyles(c);
-      this.dragging.push(c);
-    });
-
-    this.keys?.select.on("up", () => {
-      this.dragging.map((c, i, arr) => {
-        // Only one in the dragged cells, so just inverse it!
-        c.selected = arr.length > 1 ? true : !c.selected;
-        c.dragging = false;
-
-        c.setAlpha(0.5);
-
-        this.setCompletedRowsAndColumns(scale);
-
-        this.tweens.add({
-          targets: c,
-          alpha: 1,
-          ease: "Stepped",
-          delay: 500 / (i + 1),
-          scale: scale,
-          onStart: () => {
-            if (c.selected) {
-              this.emitter?.explode(6, c.x, c.y);
-              if (arr.length > 1) {
-                this.cameras.main.shake(600 / (i + 1), 0.02 / (i + 1));
-              }
-            }
-          },
-          onComplete: () => {
-            c.setCrop(0, 0, 32, 32);
-          },
-        });
-
-        c.play(
-          c.selected ? this.getSelectedAnimation() : this.getEmptyAnimation()
-        );
-      });
-
-      this.dragging = [];
-
-      // Check for solved puzzle and build next if it is solved
-      this.checkPuzzle(width, height);
-    });
   }
 
   fillCell(c: CellSprite, index: number, scale: number) {
@@ -260,24 +188,18 @@ class Battle extends Phaser.Scene {
   }
 
   isPuzzzleSolved(puzz: Nonogram) {
+    const cells = this.battleState.get("cells");
+
     let result = "";
     for (var i = 0; i < height; i++) {
       for (var j = 0; j < width; j++) {
-        if (this.cells[i] && this.cells[i][j] && this.cells[i][j].selected) {
+        if (cells[i] && cells[i][j] && cells[i][j].selected) {
           result += `${i}${j}`;
         }
       }
     }
 
     return sha256(result).toString() === puzz.resultSha;
-  }
-
-  addCell(cell: CellSprite, x: number, y: number) {
-    if (!this.cells[x]) {
-      this.cells[x] = [];
-    }
-
-    this.cells[x][y] = cell;
   }
 
   setCellStyle(cell: CellSprite, scale = 2) {
@@ -340,7 +262,7 @@ class Battle extends Phaser.Scene {
         }
 
         if (key.isDown && !key.firedOnce) {
-          this.movePlayer(key);
+          movePlayer(this, this.battleState, key);
           key.firedOnce = true;
         }
       }

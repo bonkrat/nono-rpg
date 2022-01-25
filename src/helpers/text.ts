@@ -44,23 +44,23 @@ const letterMap = [
 );
 
 export function addText(
-  this: Phaser.Scene,
+  scene: Phaser.Scene,
   text: string,
   x: number,
   y: number,
   scale: number
 ) {
   text.split("").map((letter, i) => {
-    this.add
+    scene.add
       .sprite(x + i * (32 * scale), y, letter)
       .play("letter_" + letter)
       .setScale(scale);
   });
 }
 
-export function loadFontFace(this: Phaser.Scene) {
+export function loadFontFace(scene: Phaser.Scene) {
   Object.keys(letterMap).forEach((l) => {
-    this.load.spritesheet("letter_" + l, letters, {
+    scene.load.spritesheet("letter_" + l, letters, {
       frameWidth: 32,
       frameHeight: 32,
       startFrame: letterMap[l],
@@ -68,11 +68,11 @@ export function loadFontFace(this: Phaser.Scene) {
   });
 }
 
-export function addFontAnims(this: Phaser.Scene) {
+export function addFontAnims(scene: Phaser.Scene) {
   Object.keys(letterMap).forEach((l: string) => {
-    this.anims.create({
+    scene.anims.create({
       key: "letter_" + l,
-      frames: this.anims.generateFrameNumbers("letters", {
+      frames: scene.anims.generateFrameNumbers("letters", {
         frames: [0, 1, 2].map((n) => n + letterMap[l] * 3),
       }),
       frameRate: 3,

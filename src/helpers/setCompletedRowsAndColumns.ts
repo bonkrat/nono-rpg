@@ -1,13 +1,20 @@
 import { isEqual } from "lodash";
+import { BattleStateManager } from "../../types/puzzle";
 import type Battle from "../scenes/battle";
 import generateClues from "./generateClues";
 
-export default function (this: Battle, scale: number) {
-  if (!this.isPuzzzleSolved(this.puzzle.puzzles[this.currentPuzzleSection])) {
+export default function (
+  scene: Battle,
+  battleState: BattleStateManager,
+  scale: number
+) {
+  const { currentNonogram, cells } = battleState.values;
+
+  if (!scene.isPuzzzleSolved(currentNonogram)) {
     // Rows first
     const rowClues: number[][] = [];
 
-    this.cells.map((row) => {
+    cells.map((row) => {
       const selected = row.reduce((acc: number[], curr, index) => {
         if (curr.selected) {
           acc.push(index);
@@ -17,19 +24,19 @@ export default function (this: Battle, scale: number) {
       rowClues.push(generateClues(selected));
     });
 
-    this.puzzle.puzzles[this.currentPuzzleSection].rowClues.forEach((r, i) => {
+    currentNonogram.rowClues.forEach((r, i) => {
       if (isEqual(r, rowClues[i])) {
-        this.cells[i].forEach((c) => {
+        cells[i].forEach((c) => {
           if (!c.selected) {
             c.disabled = true;
-            this.setCellDisabledStyles(c, scale);
+            scene.setCellDisabledStyles(c, scale);
           }
         });
       } else {
-        this.cells[i].forEach((c) => {
+        cells[i].forEach((c) => {
           if (!c.selected) {
             c.disabled = false;
-            this.setCellEmptyStyles(c, scale);
+            scene.setCellEmptyStyles(c, scale);
           }
         });
       }
@@ -37,12 +44,9 @@ export default function (this: Battle, scale: number) {
 
     // Then Columns
     const colClues: number[][] = [];
-    for (
-      var i = 0;
-      i < this.puzzle.puzzles[this.currentPuzzleSection].width;
-      i++
-    ) {
-      const colData = this.cells.map((row) => row[i]);
+
+    for (var i = 0; i < currentNonogram.width; i++) {
+      const colData = cells.map((row) => row[i]);
       const selectedColCell = colData.reduce((acc: number[], curr, index) => {
         if (curr.selected) {
           acc.push(index);
@@ -52,20 +56,20 @@ export default function (this: Battle, scale: number) {
       colClues.push(generateClues(selectedColCell));
     }
 
-    this.puzzle.puzzles[this.currentPuzzleSection].colClues.forEach((r, i) => {
-      const colData = this.cells.map((row) => row[i]);
+    currentNonogram.colClues.forEach((r, i) => {
+      const colData = cells.map((row) => row[i]);
 
       if (isEqual(r, colClues[i])) {
         colData.forEach((c) => {
           if (!c.selected) {
             c.disabled = true;
-            this.setCellDisabledStyles(c, scale);
+            scene.setCellDisabledStyles(c, scale);
           }
         });
       } else {
         colData.forEach((c) => {
           if (!c.selected && !c.disabled) {
-            this.setCellEmptyStyles(c, scale);
+            scene.setCellEmptyStyles(c, scale);
           }
         });
       }

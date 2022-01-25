@@ -32,11 +32,15 @@ export interface CellSprite
 export interface CellContainer extends Phaser.GameObjects.Container {
   getAt(index: number): CellSprite;
   getAll(
-    property?: string | undefined,
+    property?: string,
     value?: any,
-    startIndex?: number | undefined,
-    endIndex?: number | undefined
+    startIndex?: number,
+    endIndex?: number
   ): CellSprite[];
+}
+
+export interface Player {
+  currentCell: { x: number; y: number };
 }
 
 type BattleKey = Phaser.Input.Keyboard.Key & {
@@ -53,3 +57,28 @@ type BattleKeys = {
 };
 
 export interface MiniGrid extends CellContainer {}
+
+export interface BattleState {
+  cells: CellSprite[][];
+  dragging: CellSprite[];
+  puzzle: Puzzle;
+  player: Player;
+  currentPuzzleIndex: number;
+  currentNonogram: Nonogram;
+  currentPuzzleSection: number = 0;
+  completedPuzzles: number[];
+  rowClues: Phaser.GameObjects.Sprite[][];
+  colClues: Phaser.GameObjects.Sprite[][];
+  cellContainer: CellContainer;
+  minigrids: MiniGrid[];
+}
+
+export interface BattleStateManager extends Phaser.Data.DataManager {
+  values: { [k in keyof BattleState]: BattleState[k] };
+  set(key: keyof BattleState, value: BattleState[keyof BattleState]): void;
+  set({}: {
+    [k in keyof BattleState]?: BattleState[k];
+  }): void;
+  get<T extends keyof BattleState>(key: T): BattleState[T];
+  getAll(): BattleState;
+}
