@@ -11,19 +11,21 @@ export function resetPlayer(scene: Battle, cellcontainer: CellContainer) {
   scene.playerSprite.setVisible(true);
 
   scene.battleState.set("player", {
-    currentCell: { x: 0, y: 0 },
+    x: 0,
+    y: 0,
   } as Player);
 
-  // player.currentCell = { x: 0, y: 0 };
   scene.playerSprite.setPosition(cellcontainer.x, cellcontainer.y);
 
   // Player Controls
   scene.keys?.select.on("down", () => {
-    const player = scene.battleState.get("player");
-    const cells = scene.battleState.get("cells");
-    const c = cells[player.currentCell.x][player.currentCell.y];
+    const {
+      player: { x, y },
+      cells,
+    } = scene.battleState.getAll();
+
+    const c = cells[x][y];
     scene.setCellHoverStyles(c);
-    scene.battleState.get("dragging").push(c);
   });
 
   scene.keys?.select.on("up", () => {

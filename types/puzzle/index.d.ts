@@ -40,7 +40,8 @@ export interface CellContainer extends Phaser.GameObjects.Container {
 }
 
 export interface Player {
-  currentCell: { x: number; y: number };
+  x: number;
+  y: number;
 }
 
 type BattleKey = Phaser.Input.Keyboard.Key & {

@@ -1,69 +1,28 @@
-import {
-  BattleState,
-  BattleStateManager,
-  Cell,
-  Direction,
-  Nonogram,
-  Player,
-} from "../../types/puzzle";
+import { BattleStateManager, Nonogram, Player } from "../../types/puzzle";
 import Battle from "../scenes/battle";
-import { scale } from "../scenes/battle/constants";
 
-function moveDown(
-  scene: Battle,
-  player: Player,
-  setPlayer: Function,
-  currentNonogram: Nonogram
-) {
-  if (player.currentCell.x < currentNonogram.height - 1) {
-    animatePlayer(scene, "down", () => scene.selectCell());
-    setPlayer({ x: player.currentCell.x + 1, y: player.currentCell.y });
+function moveDown({ x, y }: Player, currentNonogram: Nonogram) {
+  if (x < currentNonogram.height - 1) {
+    return { x: x + 1, y };
   }
 }
 
-function moveUp(scene: Battle, player: Player, setPlayer: Function) {
-  if (player.currentCell.x > 0) {
-    animatePlayer(scene, "up", () => scene.selectCell());
-    setPlayer({ x: player.currentCell.x - 1, y: player.currentCell.y });
+function moveUp({ x, y }: Player) {
+  if (x > 0) {
+    return { x: x - 1, y };
   }
 }
 
-function moveLeft(scene: Battle, player: Player, setPlayer: Function) {
-  if (player.currentCell.y > 0) {
-    animatePlayer(scene, "left", () => scene.selectCell());
-    setPlayer({ y: player.currentCell.y - 1, x: player.currentCell.x });
+function moveLeft({ x, y }: Player) {
+  if (y > 0) {
+    return { y: y - 1, x };
   }
 }
 
-function moveRight(
-  scene: Battle,
-  player: Player,
-  setPlayer: Function,
-  currentNonogram: Nonogram
-) {
-  if (player.currentCell.y < currentNonogram.width - 1) {
-    animatePlayer(scene, "right", () => scene.selectCell());
-    setPlayer({ y: player.currentCell.y + 1, x: player.currentCell.x });
+function moveRight({ x, y }: Player, currentNonogram: Nonogram) {
+  if (y < currentNonogram.width - 1) {
+    return { y: y + 1, x };
   }
-}
-
-function animatePlayer(
-  scene: Battle,
-  direction: Direction,
-  onStart: () => void
-) {
-  scene.tweens.add({
-    targets: scene.playerSprite,
-    duration: 150,
-    ...(["left", "right"].includes(direction) && {
-      x: (direction === "left" ? "-" : "+") + "=" + 32 * scale,
-    }),
-    ...(["up", "down"].includes(direction) && {
-      y: (direction === "up" ? "-" : "+") + "=" + 32 * scale,
-    }),
-    ease: "Bounce",
-    onStart,
-  });
 }
 
 export function movePlayer(
@@ -73,17 +32,17 @@ export function movePlayer(
 ) {
   const { currentNonogram, player } = battleState.values;
 
-  const setPlayerCell = function (currentCell: { x: number; y: number }) {
-    battleState.set("player", { currentCell });
-  };
+  let newPosition;
 
   if (key === scene.keys?.down) {
-    moveDown(scene, player, setPlayerCell, currentNonogram);
+    newPosition = moveDown(player, currentNonogram);
   } else if (key === scene.keys?.up) {
-    moveUp(scene, player, setPlayerCell);
+    newPosition = moveUp(player);
   } else if (key === scene.keys?.left) {
-    moveLeft(scene, player, setPlayerCell);
+    newPosition = moveLeft(player);
   } else if (key === scene.keys?.right) {
-    moveRight(scene, player, setPlayerCell, currentNonogram);
+    newPosition = moveRight(player, currentNonogram);
   }
+
+  battleState.set("player", (newPosition as Player) ?? player);
 }

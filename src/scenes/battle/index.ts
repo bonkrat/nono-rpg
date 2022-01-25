@@ -6,7 +6,9 @@ import {
   BattleStateManager,
   CellContainer,
   CellSprite,
+  Direction,
   Nonogram,
+  Player,
   PuzzleSet,
 } from "../../../types/puzzle";
 import cell from "../../assets/sprites/cell.png";
@@ -65,6 +67,7 @@ class Battle extends Phaser.Scene {
       cells: [],
       dragging: [],
       puzzle: this.puzzleSet[0],
+      player: { x: 0, y: 0 },
       currentNonogram: this.puzzleSet[0].puzzles[0],
       currentPuzzleSection: 0,
       currentPuzzleIndex: 0,
@@ -147,7 +150,21 @@ class Battle extends Phaser.Scene {
       .setTint(0x408abd)
       .play("player");
 
-    this.battleState.set("player", { currentCell: { x: 0, y: 0 } });
+    this.battleState.events.on("changedata-player", (scene: Battle) => {
+      const {
+        player: { x, y },
+        cellContainer,
+      } = scene.battleState.values;
+
+      this.tweens.add({
+        targets: this.playerSprite,
+        duration: 150,
+        x: cellContainer.x + y * 32 * scale,
+        y: cellContainer.y + x * 32 * scale,
+        ease: "Bounce",
+        onComplete: () => this.selectCell(),
+      });
+    });
 
     resetPlayer(this, cellcontainer);
   }
@@ -156,9 +173,9 @@ class Battle extends Phaser.Scene {
     const { player, cells, dragging } = this.battleState.values;
 
     if (this.keys?.select?.isDown) {
-      const c = cells[player.currentCell.x][player.currentCell.y];
+      const c = cells[player.x][player.y];
       this.setCellHoverStyles(c);
-      dragging.push(c);
+      this.battleState.set("dragging", dragging.concat(c));
     }
   }
 
@@ -251,12 +268,6 @@ class Battle extends Phaser.Scene {
       const key = this?.keys[k];
 
       if (key) {
-        if (!key.previousDuration) {
-          key.previousDuration = key.getDuration();
-        }
-
-        const dur = key.getDuration() - key.previousDuration;
-
         if (key.isUp) {
           if (key.firedOnce) key.firedOnce = false;
         }
@@ -265,12 +276,18 @@ class Battle extends Phaser.Scene {
           movePlayer(this, this.battleState, key);
           key.firedOnce = true;
         }
+
+        // Sliding controls
+        if (!key.previousDuration) {
+          key.previousDuration = key.getDuration();
+        }
+
+        const dur = key.getDuration() - key.previousDuration;
+        if (key.isDown && key.getDuration() > 250 && dur > 200) {
+          key.previousDuration = key.getDuration();
+          movePlayer(this, this.battleState, key);
+        }
       }
-      // Sliding controls
-      // if (k.isDown && k.getDuration() > 250 && dur > 100) {
-      //   k.previousDuration = k.getDuration();
-      //   this.movePlayer(k);
-      // }
     }
   }
 }
