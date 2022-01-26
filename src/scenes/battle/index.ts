@@ -214,11 +214,11 @@ class Battle extends Phaser.Scene {
   }
 
   isPuzzzleSolved(puzz: Nonogram) {
-    const cells = this.battleState.get("cells");
+    const { cells } = this.battleState.values;
 
     let result = "";
-    for (var i = 0; i < height; i++) {
-      for (var j = 0; j < width; j++) {
+    for (var i = 0; i < puzz.height; i++) {
+      for (var j = 0; j < puzz.width; j++) {
         if (
           cells[i] &&
           cells[i][j] &&
