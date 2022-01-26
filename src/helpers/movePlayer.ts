@@ -44,5 +44,11 @@ export function movePlayer(
     newPosition = moveRight(player, currentNonogram);
   }
 
-  battleState.set("player", (newPosition as Player) ?? player);
+  newPosition &&
+    battleState.set("player", {
+      x: newPosition?.x,
+      y: newPosition?.y,
+      health: player.health,
+      hearts: player.hearts,
+    } as Player);
 }

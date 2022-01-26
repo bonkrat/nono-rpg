@@ -14,6 +14,8 @@ export function resetPlayer(scene: Battle, cellcontainer: CellContainer) {
   scene.battleState.set("player", {
     x: 0,
     y: 0,
+    health: 5,
+    hearts: scene.battleState.get("player").hearts,
   } as Player);
 
   scene.playerSprite.setPosition(cellcontainer.x, cellcontainer.y);

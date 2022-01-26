@@ -5,6 +5,7 @@ import {
   MiniGrid,
   Puzzle,
   CellSprite,
+  Player,
 } from "../../types/puzzle";
 import { CellState } from "../common";
 
@@ -42,6 +43,15 @@ export default function (
     }
     const currentPuzz = scene.puzzleSet[currentPuzzleIndex];
     const currentPuzzSection = currentPuzzleSection + 1;
+
+    // Reset Player health
+
+    scene.battleState.set("player", {
+      x: 0,
+      y: 0,
+      health: 5,
+      hearts: scene.battleState.get("player").hearts,
+    } as Player);
 
     // Reset current puzzle
     if (currentPuzzSection === currentPuzz.puzzles.length) {

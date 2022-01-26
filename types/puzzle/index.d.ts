@@ -49,7 +49,10 @@ export interface Coordinates {
   y: number;
 }
 
-export interface Player extends Coordinates {}
+export interface Player extends Coordinates {
+  health: number;
+  hearts: number;
+}
 
 type BattleKey = Phaser.Input.Keyboard.Key & {
   previousDuration?: number;

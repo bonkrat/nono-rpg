@@ -1,5 +1,8 @@
 import sha256 from "crypto-js/sha256";
-import { shuffle } from "lodash";
+import { shuffle, times } from "lodash";
+
+import "../../sprites/healthbar";
+
 import Phaser from "phaser";
 import {
   BattleStateManager,
@@ -25,6 +28,11 @@ import {
   movePlayer,
   resetPlayer,
 } from "../../helpers";
+import fullHealthBar from "../../assets/sprites/full_health_bar.png";
+import emptyHealthBar from "../../assets/sprites/empty_health_bar.png";
+import fullHealthCap from "../../assets/sprites/full_health_cap.png";
+import emptyHealthCap from "../../assets/sprites/empty_health_cap.png";
+import HealthBar from "../../sprites/healthbar";
 
 const width = 800;
 const height = 600;
@@ -36,6 +44,8 @@ class Battle extends Phaser.Scene {
   public playerSprite!: Phaser.GameObjects.Sprite;
   public keys?: BattleKeys;
   public emitter?: Phaser.GameObjects.Particles.ParticleEmitter;
+  public healthbar!: HealthBar;
+  public timerEvents?: Phaser.Time.TimerEvent[];
 
   constructor(
     config: Phaser.Types.Scenes.SettingsConfig,
@@ -52,6 +62,10 @@ class Battle extends Phaser.Scene {
       ["numbers", numbers],
       ["player", player],
       ["letters", letters],
+      ["fullHealthBar", fullHealthBar],
+      ["fullHealthCap", fullHealthCap],
+      ["emptyHealthBar", emptyHealthBar],
+      ["emptyHealthCap", emptyHealthCap],
     ].forEach(([key, url]: string[]) => {
       this.load.spritesheet(key, url, {
         frameWidth: 32,
@@ -68,7 +82,7 @@ class Battle extends Phaser.Scene {
       cells: [],
       dragging: this.add.group(),
       puzzle: this.puzzleSet[0],
-      player: { x: 0, y: 0 },
+      player: { x: 0, y: 0, health: 5, hearts: 3 },
       currentNonogram: this.puzzleSet[0].puzzles[0],
       currentPuzzleSection: 0,
       currentPuzzleIndex: 0,
@@ -144,6 +158,15 @@ class Battle extends Phaser.Scene {
       scale
     );
 
+    // HealthBar
+    this.healthbar = this.add.healthbar(
+      width -
+        32 * scale * this.battleState.values.player.health -
+        10 * this.battleState.values.player.health,
+      32 * scale,
+      this.battleState.values.player.health
+    );
+
     // Player
     this.playerSprite = this.add
       .sprite(cellcontainer.x, cellcontainer.y, "player")
@@ -161,7 +184,7 @@ class Battle extends Phaser.Scene {
         x: cellContainer.x + player.y * 32 * scale,
         y: cellContainer.y + player.x * 32 * scale,
         ease: "Bounce",
-        onComplete: () =>
+        onStart: () =>
           this.selectCell({
             player,
             cells,
@@ -171,6 +194,19 @@ class Battle extends Phaser.Scene {
     });
 
     resetPlayer(this, cellcontainer);
+
+    this.time.addEvent({
+      delay: Phaser.Math.Between(2000, 3000),
+      loop: true,
+      callback: () => {
+        const player = this.battleState.get("player");
+        this.battleState.set("player", {
+          ...player,
+          health: player.health - 1,
+        });
+        this.healthbar.setHealth(player.health);
+      },
+    });
   }
 
   selectCell({ player, cells, dragging }: BattleState) {
