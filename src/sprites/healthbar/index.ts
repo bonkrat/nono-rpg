@@ -4,6 +4,7 @@ import "./HealthChunk";
 import "./HealthCap";
 
 export default class HealthBar extends Phaser.GameObjects.Container {
+  maxHealth: number;
   constructor(scene: Phaser.Scene, x: number, y: number, healthAmount: number) {
     super(scene, x, y);
     const healthBarScale = 2 * 0.75;
@@ -22,6 +23,8 @@ export default class HealthBar extends Phaser.GameObjects.Container {
         .play("fullHealthBar");
       this.add(chunk);
     });
+
+    this.maxHealth = healthAmount;
   }
 
   setHealth(healthAmount: number) {
@@ -29,7 +32,7 @@ export default class HealthBar extends Phaser.GameObjects.Container {
 
     healthBar.reverse().forEach((c, i, arr) => {
       if (i === arr.length - 1) {
-        if (healthAmount < 5) {
+        if (healthAmount < this.maxHealth) {
           c.play("emptyHealthCap");
         } else {
           c.play("fullHealthCap");

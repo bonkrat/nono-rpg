@@ -5,7 +5,7 @@ export interface Cell {
   color: string;
 }
 
-export interface Nonogram {
+export interface NonogramData {
   rowClues: number[][];
   colClues: number[][];
   hint: {
@@ -20,7 +20,7 @@ export interface Nonogram {
 
 export interface Puzzle {
   name: string;
-  puzzles: Nonogram[];
+  puzzles: NonogramData[];
 }
 
 export type PuzzleSet = Puzzle[];
@@ -49,11 +49,6 @@ export interface Coordinates {
   y: number;
 }
 
-export interface Player extends Coordinates {
-  health: number;
-  hearts: number;
-}
-
 type BattleKey = Phaser.Input.Keyboard.Key & {
   previousDuration?: number;
   firedOnce?: boolean;
@@ -70,17 +65,14 @@ type BattleKeys = {
 export interface MiniGrid extends CellContainer {}
 
 export interface BattleState {
-  cells: CellSprite[][];
-  dragging: Phaser.GameObjects.Group<CellSprite>;
+  dragging: Phaser.GameObjects.Group<ICell>;
   puzzle: Puzzle;
-  player: Player;
   currentPuzzleIndex: number;
-  currentNonogram: Nonogram;
+  currentNonogram: NonogramData;
   currentPuzzleSection: number = 0;
   completedPuzzles: number[];
   rowClues: Phaser.GameObjects.Sprite[][];
   colClues: Phaser.GameObjects.Sprite[][];
-  cellContainer: CellContainer;
   minigrids: MiniGrid[];
 }
 

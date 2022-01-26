@@ -9,71 +9,75 @@ export default function (
   battleState: BattleStateManager,
   scale: number
 ) {
-  const { currentNonogram, cells } = battleState.values;
+  const { currentNonogram } = battleState.values;
 
-  if (!scene.isPuzzzleSolved(currentNonogram)) {
+  if (!scene.nonogram?.isPuzzleSolved()) {
     // Rows first
     const rowClues: number[][] = [];
 
-    cells.map((row) => {
-      const selected = row.reduce((acc: number[], curr, index) => {
-        if (curr.state === CellState.selected) {
-          acc.push(index);
-        }
-        return acc;
-      }, []);
-      rowClues.push(generateClues(selected));
-    });
+    const nonogram = scene.nonogram;
 
-    currentNonogram.rowClues.forEach((r, i) => {
-      if (isEqual(r, rowClues[i])) {
-        cells[i].forEach((c) => {
-          if (c.state !== CellState.selected) {
-            c.setState(CellState.disabled);
-            scene.setCellDisabledStyles(c, scale);
+    if (nonogram) {
+      const rows = nonogram.getRows();
+      const cols = nonogram.getColumns();
+
+      rows.map((row) => {
+        const selected = row.reduce((acc: number[], curr, index) => {
+          if (curr.state === CellState.selected) {
+            acc.push(index);
           }
-        });
-      } else {
-        cells[i].forEach((c) => {
-          if (c.state !== CellState.selected) {
-            c.setState(CellState.disabled);
-            scene.setCellEmptyStyles(c, scale);
-          }
-        });
-      }
-    });
+          return acc;
+        }, []);
+        rowClues.push(generateClues(selected));
+      });
 
-    // Then Columns
-    const colClues: number[][] = [];
-
-    for (var i = 0; i < currentNonogram.width; i++) {
-      const colData = cells.map((row) => row[i]);
-      const selectedColCell = colData.reduce((acc: number[], curr, index) => {
-        if (curr.state === CellState.selected) {
-          acc.push(index);
+      currentNonogram.rowClues.forEach((r, i) => {
+        if (isEqual(r, rowClues[i])) {
+          rows[i].forEach((c) => {
+            if (c.state !== CellState.selected) {
+              c.setState(CellState.disabled);
+              scene.setCellDisabledStyles(c, scale);
+            }
+          });
+        } else {
+          rows[i].forEach((c) => {
+            if (c.state !== CellState.selected) {
+              c.setState(CellState.disabled);
+              scene.setCellEmptyStyles(c, scale);
+            }
+          });
         }
-        return acc;
-      }, []);
-      colClues.push(generateClues(selectedColCell));
+      });
+
+      // Then Columns
+      const colClues: number[][] = [];
+
+      cols.map((col) => {
+        const selected = col.reduce((acc: number[], curr, index) => {
+          if (curr.state === CellState.selected) {
+            acc.push(index);
+          }
+          return acc;
+        }, []);
+        colClues.push(generateClues(selected));
+      });
+
+      currentNonogram.colClues.forEach((r, i) => {
+        if (isEqual(r, colClues[i].reverse())) {
+          cols[i].forEach((c) => {
+            if (c.state !== CellState.selected) {
+              c.setState(CellState.disabled);
+              scene.setCellDisabledStyles(c, scale);
+            }
+          });
+        } else {
+          cols[i].forEach((c) => {
+            if (![CellState.disabled, CellState.selected].includes(c.state)) {
+              scene.setCellEmptyStyles(c, scale);
+            }
+          });
+        }
+      });
     }
-
-    currentNonogram.colClues.forEach((r, i) => {
-      const colData = cells.map((row) => row[i]);
-
-      if (isEqual(r, colClues[i])) {
-        colData.forEach((c) => {
-          if (c.state !== CellState.selected) {
-            c.setState(CellState.disabled);
-            scene.setCellDisabledStyles(c, scale);
-          }
-        });
-      } else {
-        colData.forEach((c) => {
-          if (![CellState.disabled, CellState.selected].includes(c.state)) {
-            scene.setCellEmptyStyles(c, scale);
-          }
-        });
-      }
-    });
   }
 }

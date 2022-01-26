@@ -1,38 +1,30 @@
 import sha256 from "crypto-js/sha256";
-import { shuffle, times } from "lodash";
-
-import "../../sprites/healthbar";
-
+import { shuffle } from "lodash";
 import Phaser from "phaser";
 import {
-  BattleStateManager,
-  PuzzleSet,
   BattleKeys,
-  CellContainer,
-  CellSprite,
-  Nonogram,
-  Coordinates,
   BattleState,
+  BattleStateManager,
+  CellSprite,
+  MiniGrid,
+  NonogramData,
+  Puzzle,
+  PuzzleSet,
 } from "../../../types/puzzle";
 import cell from "../../assets/sprites/cell.png";
 import cellSelected from "../../assets/sprites/cell_selected.png";
+import emptyHealthBar from "../../assets/sprites/empty_health_bar.png";
+import emptyHealthCap from "../../assets/sprites/empty_health_cap.png";
+import fullHealthBar from "../../assets/sprites/full_health_bar.png";
+import fullHealthCap from "../../assets/sprites/full_health_cap.png";
 import letters from "../../assets/sprites/letters.png";
 import numbers from "../../assets/sprites/numbers.png";
 import player from "../../assets/sprites/player.png";
 import { CellState } from "../../common";
-import {
-  addFontAnims,
-  buildMinigrid,
-  buildPuzzle,
-  loadFontFace,
-  movePlayer,
-  resetPlayer,
-} from "../../helpers";
-import fullHealthBar from "../../assets/sprites/full_health_bar.png";
-import emptyHealthBar from "../../assets/sprites/empty_health_bar.png";
-import fullHealthCap from "../../assets/sprites/full_health_cap.png";
-import emptyHealthCap from "../../assets/sprites/empty_health_cap.png";
-import HealthBar from "../../sprites/healthbar";
+import { buildMinigrid } from "../../helpers";
+import "../../sprites";
+import type Nonogram from "../../sprites/nonogram";
+import type Player from "../../sprites/player";
 
 const width = 800;
 const height = 600;
@@ -41,11 +33,12 @@ const scale = 2;
 class Battle extends Phaser.Scene {
   public battleState!: BattleStateManager;
   public puzzleSet: PuzzleSet;
-  public playerSprite!: Phaser.GameObjects.Sprite;
   public keys?: BattleKeys;
   public emitter?: Phaser.GameObjects.Particles.ParticleEmitter;
-  public healthbar!: HealthBar;
+  public healthbar!: IHealthBar;
   public timerEvents?: Phaser.Time.TimerEvent[];
+  public player!: Player;
+  public nonogram?: Nonogram;
 
   constructor(
     config: Phaser.Types.Scenes.SettingsConfig,
@@ -72,25 +65,17 @@ class Battle extends Phaser.Scene {
         frameHeight: 32,
       });
     });
-
-    // Load the font face
-    loadFontFace(this);
   }
 
   create() {
     this.battleState.set({
-      cells: [],
       dragging: this.add.group(),
       puzzle: this.puzzleSet[0],
-      player: { x: 0, y: 0, health: 5, hearts: 3 },
       currentNonogram: this.puzzleSet[0].puzzles[0],
       currentPuzzleSection: 0,
       currentPuzzleIndex: 0,
       completedPuzzles: [],
     });
-
-    // Load animations for text
-    addFontAnims(this);
 
     // Setup keyboard controls
     this.keys = this.input.keyboard.addKeys({
@@ -100,36 +85,6 @@ class Battle extends Phaser.Scene {
       right: Phaser.Input.Keyboard.KeyCodes.D,
       select: Phaser.Input.Keyboard.KeyCodes.SHIFT,
     }) as BattleKeys;
-
-    for (var i = 0; i < 5; i++) {
-      this.anims.create({
-        key: "empty_" + i,
-        frames: this.anims.generateFrameNumbers("cell", {
-          frames: shuffle([0, 1, 2, 3, 4]),
-        }),
-        frameRate: 3,
-        repeat: -1,
-      });
-
-      this.anims.create({
-        key: "selected_" + i,
-        frames: this.anims.generateFrameNumbers("cellSelected", {
-          frames: shuffle([0, 1, 2, 3, 4]),
-        }),
-        frameRate: 3,
-        repeat: -1,
-      });
-    }
-
-    // Player animations
-    this.anims.create({
-      key: "player",
-      frames: this.anims.generateFrameNumbers("player", {
-        frames: shuffle([0, 1, 2, 3, 4]),
-      }),
-      frameRate: 3,
-      repeat: -1,
-    });
 
     // Create number animations
     for (var i = 0; i < 10; i++) {
@@ -150,72 +105,43 @@ class Battle extends Phaser.Scene {
     );
 
     // Print picross puzzle
-    const cellcontainer = buildPuzzle(
-      this,
-      this.battleState,
-      width,
-      height,
-      scale
-    );
+    const { puzzle, currentPuzzleSection } = this.battleState.values;
+
+    const currPuzz = puzzle.puzzles[currentPuzzleSection];
+    const middle = width - currPuzz.width * 32 * scale;
+    const bottom = height - currPuzz.height * 32 * scale;
+
+    this.nonogram = this.add.nonogram(middle, bottom, currPuzz);
+
+    // Add Player
+    this.player = this.add.player(this.nonogram.x, this.nonogram.y);
 
     // HealthBar
     this.healthbar = this.add.healthbar(
-      width -
-        32 * scale * this.battleState.values.player.health -
-        10 * this.battleState.values.player.health,
+      width - 32 * scale * this.player.health - 10 * this.player.health,
       32 * scale,
-      this.battleState.values.player.health
+      this.player.health
     );
-
-    // Player
-    this.playerSprite = this.add
-      .sprite(cellcontainer.x, cellcontainer.y, "player")
-      .setScale(scale * 1.5)
-      .setTint(0x408abd)
-      .play("player");
-
-    this.battleState.events.on("changedata-player", (scene: Battle) => {
-      const { player, cellContainer, cells, dragging } =
-        scene.battleState.getAll();
-
-      this.tweens.add({
-        targets: this.playerSprite,
-        duration: 150,
-        x: cellContainer.x + player.y * 32 * scale,
-        y: cellContainer.y + player.x * 32 * scale,
-        ease: "Bounce",
-        onStart: () =>
-          this.selectCell({
-            player,
-            cells,
-            dragging,
-          } as BattleState),
-      });
-    });
-
-    resetPlayer(this, cellcontainer);
 
     this.time.addEvent({
       delay: Phaser.Math.Between(2000, 3000),
       loop: true,
-      callback: () => {
-        const player = this.battleState.get("player");
-        this.battleState.set("player", {
-          ...player,
-          health: player.health - 1,
-        });
-        this.healthbar.setHealth(player.health);
-      },
+      callback: this.hurtPlayer,
+      callbackScope: this,
     });
   }
 
-  selectCell({ player, cells, dragging }: BattleState) {
-    if (this.keys?.select?.isDown) {
-      const c = cells[player.x][player.y];
-      this.setCellHoverStyles(c);
+  hurtPlayer() {
+    this.player.removeHealth(1);
+    // this.healthbar.setHealth(this.player.removeHealth(1));
+  }
 
-      if (!dragging.contains(c)) {
-        dragging.add(c);
+  selectCell(cell: ICell, { dragging }: BattleState) {
+    if (this.keys?.select?.isDown) {
+      this.setCellHoverStyles(cell);
+
+      if (!dragging.contains(cell)) {
+        dragging.add(cell);
       }
     }
   }
@@ -249,52 +175,47 @@ class Battle extends Phaser.Scene {
     );
   }
 
-  isPuzzzleSolved(puzz: Nonogram) {
-    const { cells } = this.battleState.values;
+  // isPuzzzleSolved(puzz: NonogramData) {
+  //   let result = "";
+  //   for (var x = 0; x < puzz.height; x++) {
+  //     for (var y = 0; y < puzz.width; y++) {
+  //       if (this.nonogram?.getCell({ x, y }).state === CellState.selected) {
+  //         result += `${x}${y}`;
+  //       }
+  //     }
+  //   }
 
-    let result = "";
-    for (var i = 0; i < puzz.height; i++) {
-      for (var j = 0; j < puzz.width; j++) {
-        if (
-          cells[i] &&
-          cells[i][j] &&
-          cells[i][j].state === CellState.selected
-        ) {
-          result += `${i}${j}`;
-        }
-      }
-    }
+  //   return sha256(result).toString() === puzz.resultSha;
+  // }
 
-    return sha256(result).toString() === puzz.resultSha;
-  }
-
-  setCellStyle(cell: CellSprite, scale = 2) {
+  setCellStyle(cell: ICell, scale = 2) {
     cell.state === CellState.selected
       ? this.setCellSelectedStyles(cell, scale)
       : this.setCellEmptyStyles(cell, scale);
   }
 
-  setCellSelectedStyles(cell: CellSprite, scale = 2) {
+  setCellSelectedStyles(cell: ICell, scale = 2) {
     cell.play(this.getSelectedAnimation());
     cell.setAlpha(1);
     cell.setCrop(0, 0, 32, 32);
     cell.setScale(scale);
   }
 
-  setCellEmptyStyles(cell: CellSprite, scale = 2) {
+  setCellEmptyStyles(cell: ICell, scale = 2) {
+    cell.setState(CellState.empty);
     cell.setCrop(0, 0, 32, 32);
     cell.setAlpha(1);
     cell.setScale(scale);
     cell.play(this.getEmptyAnimation());
   }
 
-  setCellHoverStyles(cell: CellSprite, scale = 2) {
+  setCellHoverStyles(cell: ICell, scale = 2) {
     cell.play(this.getSelectedAnimation()).setAlpha(0.8);
     cell.setCrop(1, 1, 30, 30);
     cell.setScale(scale * 0.8);
   }
 
-  setCellDisabledStyles(cell: CellSprite, scale = 2) {
+  setCellDisabledStyles(cell: ICell, scale = 2) {
     cell.play(this.getEmptyAnimation()).setAlpha(0.3);
     cell.setCrop(1, 1, 30, 30);
     cell.setScale(scale * 0.8);
@@ -312,7 +233,210 @@ class Battle extends Phaser.Scene {
     return string + "_" + Math.floor(Math.random() * length);
   }
 
+  handlePuzzleUpdate() {
+    if (this.nonogram?.isPuzzleSolved()) {
+      const {
+        currentPuzzleSection,
+        currentNonogram,
+        completedPuzzles,
+        currentPuzzleIndex,
+        minigrids,
+      } = this.battleState.values;
+
+      // this.keys?.select.removeAllListeners();
+      this.nonogram?.rowClues?.map((r) => r.map((c) => c.setVisible(false)));
+      this.nonogram?.colClues?.map((r) => r.map((c) => c.setVisible(false)));
+      const solvedContainer = this.nonogram;
+      let currentMinigrid;
+      if (minigrids) {
+        currentMinigrid = minigrids[currentPuzzleIndex];
+      }
+      const currentPuzz = this.puzzleSet[currentPuzzleIndex];
+      const currentPuzzSection = currentPuzzleSection;
+      this.player.resetHealth();
+      console.log("currentPuzzSection first", currentPuzzSection);
+
+      // All nonograms complete, reset to a new set puzzle in the set.
+      if (currentPuzzSection === currentPuzz.puzzles.length - 1) {
+        this.battleState.set({
+          currentPuzzleSection: 0,
+          completedPuzzles: [...completedPuzzles, currentPuzzleIndex],
+        });
+
+        if (completedPuzzles.length === this.puzzleSet.length) {
+          console.log("BATTLE OVER!");
+        }
+
+        const unfinishedPuzzlesIndexes = this.puzzleSet
+          .map((p, i) => i)
+          .filter((p, i) => !completedPuzzles.includes(i));
+
+        const randomPuzzleIndex =
+          unfinishedPuzzlesIndexes[
+            Math.floor(Math.random() * unfinishedPuzzlesIndexes.length)
+          ];
+
+        console.log("next nono", this.puzzleSet[randomPuzzleIndex].puzzles[0]);
+
+        this.battleState.set({
+          puzzle: this.puzzleSet[randomPuzzleIndex],
+          currentPuzzleIndex: randomPuzzleIndex,
+          currentNonogram: this.puzzleSet[randomPuzzleIndex].puzzles[0],
+        });
+
+        const middle =
+          width - this.battleState.values.currentNonogram.width * 32 * scale;
+        const bottom =
+          height - this.battleState.values.currentNonogram.height * 32 * scale;
+
+        this.time.delayedCall(1000, () => {
+          this.nonogram = this.add.nonogram(
+            middle,
+            bottom,
+            this.battleState.get("currentNonogram")
+          );
+        });
+      } else {
+        // Iterate to the next nonogram in the current puzzle.
+        this.battleState.set({
+          currentPuzzleSection:
+            this.battleState.values.currentPuzzleSection + 1,
+          currentNonogram:
+            this.battleState.values.puzzle.puzzles[currentPuzzleSection + 1],
+        });
+
+        console.log("currentPuzzleSection", currentPuzzSection);
+
+        this.time.delayedCall(
+          1000,
+          () => {
+            if (this.nonogram?.nonogramData.width) {
+              const middle =
+                width - this.nonogram?.nonogramData.width * 32 * scale;
+              const bottom =
+                height - this.nonogram?.nonogramData.height * 32 * scale;
+              this.nonogram = this.add.nonogram(
+                middle,
+                bottom,
+                this.battleState.get("currentNonogram")
+              );
+            }
+          },
+          [],
+          this
+        );
+      }
+
+      this.time.delayedCall(
+        1000,
+        (
+          nonogram: Nonogram,
+          minigrid: MiniGrid,
+          currentPuzz: Puzzle,
+          currentPuzzleSection: number
+        ) => {
+          const path = { t: 0, vec: new Phaser.Math.Vector2() };
+          const startPoint = new Phaser.Math.Vector2(nonogram.x, nonogram.y);
+          var controlPoint1 = new Phaser.Math.Vector2(
+            nonogram.x + 300,
+            nonogram.y - 300
+          );
+          var controlPoint2 = new Phaser.Math.Vector2(
+            nonogram.x + 100,
+            nonogram.y - 300
+          );
+          var endPoint = new Phaser.Math.Vector2(
+            minigrid.x,
+            minigrid.y - (32 * scale) / 2
+          );
+          var curve = new Phaser.Curves.CubicBezier(
+            startPoint,
+            controlPoint1,
+            controlPoint2,
+            endPoint
+          );
+
+          nonogram
+            .getAll()
+            .forEach((c) => c.state !== CellState.selected && c.destroy());
+
+          this.tweens.add({
+            targets: path,
+            t: 1,
+            ease: "Sine.easeInOut",
+            duration: 1000,
+            onUpdate: () => {
+              curve.getPoint(path.t, path.vec);
+              nonogram.x = path.vec.x;
+              nonogram.y = path.vec.y;
+            },
+          });
+
+          this.tweens.add({
+            targets: nonogram,
+            duration: 500,
+            scale: scale / 10 / Math.sqrt(currentPuzz.puzzles.length),
+            onComplete: () => {
+              this.time.delayedCall(
+                1500,
+                (
+                  currentPuzzleSection: number,
+                  puzzleLength: number,
+                  puzzleName: string
+                ) => {
+                  const offset = 5;
+                  console.log(
+                    "currentPuzzleSection in tween",
+                    currentPuzzleSection
+                  );
+                  if (currentPuzzleSection > 0) {
+                    // The current nonogram is part of a set of a larger image so set it within the minigrid.
+                    nonogram.x =
+                      minigrid.x +
+                      minigrid.getAt(currentPuzzleSection).x +
+                      offset;
+                    nonogram.y =
+                      minigrid.y +
+                      minigrid.getAt(currentPuzzleSection).y +
+                      offset;
+                  } else {
+                    nonogram.x = minigrid.x + minigrid.getAt(0).x + offset;
+                    nonogram.y = minigrid.y + minigrid.getAt(0).y + offset;
+                  }
+
+                  // If the current puzzle section is the last piece of the larger image
+                  if (currentPuzzleSection === puzzleLength - 1) {
+                    minigrid.setVisible(false);
+                    this.add.textsprite(
+                      puzzleName,
+                      minigrid.x + minigrid.x / 4,
+                      minigrid.y - 32 + 32 / 2,
+                      scale / 4
+                    );
+                  }
+
+                  this.emitter?.explode(32, nonogram.x, nonogram.y);
+                  this.cameras.main.shake(200);
+                },
+                [
+                  currentPuzzleSection,
+                  currentPuzz.puzzles.length,
+                  currentPuzz.name,
+                ],
+                this
+              );
+            },
+          });
+        },
+        [solvedContainer, currentMinigrid, currentPuzz, currentPuzzSection],
+        this
+      );
+    }
+  }
+
   update() {
+    // Update healthbar status
+    this.healthbar.setHealth(this.player.health);
     for (const k in this?.keys) {
       const key = this?.keys[k];
 
@@ -322,7 +446,7 @@ class Battle extends Phaser.Scene {
         }
 
         if (key.isDown && !key.firedOnce) {
-          movePlayer(this, this.battleState, key);
+          this.player.move(key);
           key.firedOnce = true;
         }
 
@@ -334,7 +458,7 @@ class Battle extends Phaser.Scene {
         const dur = key.getDuration() - key.previousDuration;
         if (key.isDown && key.getDuration() > 250 && dur > 200) {
           key.previousDuration = key.getDuration();
-          movePlayer(this, this.battleState, key);
+          this.player.move(key);
         }
       }
     }

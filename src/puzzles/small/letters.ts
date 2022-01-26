@@ -1,4 +1,4 @@
-import { Nonogram, Puzzle } from "../../../types/puzzle";
+import { Puzzle } from "../../../types/puzzle";
 
 export default [
   {
@@ -22,7 +22,7 @@ export default [
           "47c712234526261721000e77922140db02dd84e5b7ef0e57d342149d4aea282b",
         height: 5,
         width: 5,
-      } as Nonogram,
+      },
     ],
   },
   {
