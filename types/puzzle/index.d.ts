@@ -1,3 +1,5 @@
+import Battle from "../../src/scenes/battle";
+
 export interface Cell {
   selected: boolean;
   color: string;
@@ -29,14 +31,17 @@ export interface CellSprite
   state: CellState;
 }
 
-export interface CellContainer extends Phaser.GameObjects.Container {
-  getAt(index: number): CellSprite;
+export class CellContainer extends Phaser.GameObjects.Container {
+  constructor(scene: Battle, x?: number, y?: number, children?: CellSprite[]) {
+    super(scene, x, y, children);
+  }
   getAll(
     property?: string,
     value?: any,
     startIndex?: number,
     endIndex?: number
   ): CellSprite[];
+  getAt(index: number): CellSprite;
 }
 
 export interface Coordinates {
@@ -63,7 +68,7 @@ export interface MiniGrid extends CellContainer {}
 
 export interface BattleState {
   cells: CellSprite[][];
-  dragging: CellSprite[];
+  dragging: Phaser.GameObjects.Group<CellSprite>;
   puzzle: Puzzle;
   player: Player;
   currentPuzzleIndex: number;

@@ -66,7 +66,7 @@ class Battle extends Phaser.Scene {
   create() {
     this.battleState.set({
       cells: [],
-      dragging: [],
+      dragging: this.add.group(),
       puzzle: this.puzzleSet[0],
       player: { x: 0, y: 0 },
       currentNonogram: this.puzzleSet[0].puzzles[0],
@@ -142,7 +142,7 @@ class Battle extends Phaser.Scene {
       width,
       height,
       scale
-    ) as CellContainer;
+    );
 
     // Player
     this.playerSprite = this.add
@@ -178,8 +178,8 @@ class Battle extends Phaser.Scene {
       const c = cells[player.x][player.y];
       this.setCellHoverStyles(c);
 
-      if (!dragging.includes(c)) {
-        this.battleState.set("dragging", dragging.concat(c));
+      if (!dragging.contains(c)) {
+        dragging.add(c);
       }
     }
   }
