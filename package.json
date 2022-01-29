@@ -1,8 +1,8 @@
 {
-  "name": "phaser3-project-template",
+  "name": "nono-rpg",
   "version": "1.1.2",
-  "description": "A Phaser 3 Project Template",
-  "main": "src/main.js",
+  "description": "WIP Unnamed Nonogram RPG",
+  "main": "src/main.ts",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
@@ -10,15 +10,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/photonstorm/phaser3-project-template.git"
+    "url": "git@github.com:bonkrat/nono-rpg.git"
   },
-  "author": "Richard Davey <rdavey@gmail.com> (http://www.photonstorm.com)",
+  "author": "bonkrat",
   "license": "MIT",
   "licenseUrl": "http://www.opensource.org/licenses/mit-license.php",
-  "bugs": {
-    "url": "https://github.com/photonstorm/phaser3-project-template/issues"
-  },
-  "homepage": "https://github.com/photonstorm/phaser3-project-template#readme",
   "devDependencies": {
     "@types/crypto-js": "^4.1.0",
     "@types/lodash": "^4.14.178",
