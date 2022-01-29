@@ -132,7 +132,7 @@ class Battle extends Phaser.Scene {
   }
 
   hurtPlayer() {
-    this.player.removeHealth(1);
+    this.player?.removeHealth(1);
     // this.healthbar.setHealth(this.player.removeHealth(1));
   }
 
