@@ -6,7 +6,7 @@ import type Battle from "../../scenes/battle";
 const NAME = "Karen";
 
 export class Karen extends Enemy {
-  dialogue = ["Where is your mother?"];
+  dialogue = ["foobar baz biz", "baz qix "];
   puzzleSet = [puzzles[0], puzzles[1]];
   assets = [{ url: karen, frameConfig: { frameWidth: 128, frameHeight: 182 } }];
 
@@ -20,14 +20,17 @@ export class Karen extends Enemy {
     return this;
   }
 
-  attack(): void {
+  attack() {
     this.scene.time.addEvent({
       delay: Phaser.Math.Between(2000, 3000),
       loop: true,
       callback: () => {
-        (this.scene as Battle).player.removeHealth;
+        (this.scene as Battle).player.removeHealth(1);
+        this.speak();
       },
     });
+
+    return this;
   }
 }
 

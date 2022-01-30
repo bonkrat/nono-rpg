@@ -21,6 +21,7 @@ export class HealthBar extends Phaser.GameObjects.Container {
         )
         .setScale(2 * 0.75)
         .play("fullHealthBar");
+      chunk.type = "Chunk";
       this.add(chunk);
     });
 
@@ -43,6 +44,10 @@ export class HealthBar extends Phaser.GameObjects.Container {
         c.play("fullHealthBar");
       }
     });
+  }
+
+  getAll(...args: Parameters<Phaser.GameObjects.Container["getAll"]>) {
+    return super.getAll(...args) as Phaser.GameObjects.Sprite[];
   }
 }
 

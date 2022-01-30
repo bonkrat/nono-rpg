@@ -10,6 +10,7 @@ import {
   fullHealthCap,
   emptyHealthBar,
   emptyHealthCap,
+  bubble,
 } from "../../assets/sprites";
 import { CellState } from "../../common";
 import { HealthBar, Player, Nonogram, MiniGrid } from "../../sprites";
@@ -69,6 +70,7 @@ class Battle extends Phaser.Scene {
       ["fullHealthCap", fullHealthCap],
       ["emptyHealthBar", emptyHealthBar],
       ["emptyHealthCap", emptyHealthCap],
+      ["bubble", bubble],
     ].forEach(([key, url]: string[]) => {
       this.load.spritesheet(key, url, {
         frameWidth: 32,
@@ -115,7 +117,7 @@ class Battle extends Phaser.Scene {
       this.player.health
     );
 
-    this.enemy = (await this.add.enemy(Karen)).draw(150, 250);
+    this.enemy = (await this.add.enemy(Karen)).draw(175, 300).attack();
   }
 
   handlePuzzleUpdate() {
@@ -298,9 +300,6 @@ class Battle extends Phaser.Scene {
   }
 
   update() {
-    // Update healthbar status
-    // this.healthbar.setHealth(this.player.health);
-
     for (const k in this?.keys) {
       const key = this?.keys[k];
 

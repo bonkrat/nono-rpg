@@ -68,7 +68,7 @@ declare namespace Phaser.GameObjects {
       x: number,
       y: number,
       scale: number
-    ): Phaser.GameObjects.Sprite[];
+    ): Phaser.GameObjects.Container;
     enemy(
       EnemyClass: EnemyClass
     ): Promise<import("./sprites/enemies/enemy").Enemy>;

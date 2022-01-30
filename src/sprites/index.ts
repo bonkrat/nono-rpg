@@ -9,3 +9,4 @@ import "./cell";
 import "./nonogram";
 import "./minigrid";
 import "./player";
+import "./text";

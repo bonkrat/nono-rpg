@@ -58,7 +58,34 @@ export class Player extends Phaser.GameObjects.Sprite {
   }
 
   removeHealth(val: number) {
-    this.health -= val;
+    if (this.health > 0) {
+      if (this.health === this.initialHealth) {
+        (this.scene as Battle).healthbar.getAll()[0].play("emptyHealthCap");
+      }
+
+      this.health -= val;
+
+      const healthChunk = (this.scene as Battle).healthbar.getAll().reverse()[
+        this.health
+      ];
+
+      this.scene.add.tween({
+        targets: healthChunk,
+        from: 1,
+        to: 0,
+        duration: 100,
+        yoyo: true,
+        onUpdate: function (tween) {
+          const value = Math.floor(tween.getValue());
+          healthChunk.setAlpha(value);
+        },
+        onComplete: function () {
+          healthChunk.setAlpha(1);
+          healthChunk.play("emptyHealthBar");
+        },
+      });
+    }
+
     return this.health;
   }
 

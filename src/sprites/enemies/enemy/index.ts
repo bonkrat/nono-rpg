@@ -1,15 +1,66 @@
 import { AssetLoader } from "../../../utility/AssetLoader";
+import bubble from "../../../assets/sprites/bubble.png";
+import { random } from "lodash";
+import { scale } from "../../../scenes/battle/constants";
 
 export abstract class Enemy extends AssetLoader {
   public abstract dialogue: string[];
   public abstract puzzleSet: PuzzleSet;
-  protected abstract assets: Partial<Phaser.Types.Loader.FileTypes.SpriteSheetFileConfig>[];
   protected scene: Phaser.Scene;
+  protected speech!: Phaser.GameObjects.Container;
   protected sprite!: Phaser.GameObjects.Sprite;
+  protected bubbleSprite!: Phaser.GameObjects.Sprite;
+  public assets = [
+    { url: bubble, key: "bubble" },
+  ] as Partial<Phaser.Types.Loader.FileTypes.SpriteSheetFileConfig>[];
 
   constructor(scene: Phaser.Scene) {
     super(scene);
     this.scene = scene;
+  }
+
+  speak() {
+    this.speech?.destroy();
+    const enemyBounds = this.sprite.getBounds();
+    this.speech = this.scene.add
+      .textsprite(
+        this.dialogue[Math.floor(Math.random() * this.dialogue.length)],
+        random(enemyBounds.left, enemyBounds.right),
+        enemyBounds.bottom * 0.75,
+        0.5
+      )
+      .setVisible(false);
+
+    if (!this.bubbleSprite) {
+      this.bubbleSprite = this.scene.add.sprite(this.x, this.y, "bubble");
+    }
+
+    const graphics = this.scene.add.graphics();
+
+    const bounds = this.speech.getBounds();
+    graphics.beginPath();
+    graphics.fillStyle(0xffffff, 1);
+    graphics.setScale(0.25);
+
+    this.scene.add.tween({
+      targets: this.bubbleSprite,
+      duration: 250,
+      ease: "Cubic",
+      scaleX: Math.floor((bounds.width + 50) / this.bubbleSprite.width),
+      scaleY: Math.floor((bounds.height + 50) / this.bubbleSprite.height),
+      x: bounds.centerX,
+      y: bounds.centerY,
+      flipX: true,
+      flipY: true,
+    });
+
+    this.bubbleSprite.mask = graphics.createBitmapMask(this.speech);
+    this.bubbleSprite.mask.invertAlpha = true;
+    this.bubbleSprite.play("bubble");
+
+    this.speech.setVisible(true);
+
+    return this;
   }
 
   draw(x: number, y: number, frame = this.key) {
@@ -23,7 +74,7 @@ export abstract class Enemy extends AssetLoader {
     return this.sprite.play(anim);
   }
 
-  abstract attack(): void;
+  abstract attack(): Enemy;
 
   get x() {
     return this.sprite.x;

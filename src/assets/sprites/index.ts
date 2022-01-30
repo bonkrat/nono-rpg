@@ -7,6 +7,7 @@ import fullHealthCap from "./full_health_cap.png";
 import letters from "./letters.png";
 import numbers from "./numbers.png";
 import player from "./player.png";
+import bubble from "./bubble.png";
 
 export {
   cell,
@@ -18,4 +19,5 @@ export {
   letters,
   numbers,
   player,
+  bubble,
 };

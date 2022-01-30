@@ -74,11 +74,58 @@ Phaser.GameObjects.GameObjectFactory.register(
       });
     }
 
-    return text.split("").map((letter, i) =>
-      this.scene.add
-        .sprite(x + i * (32 * scale), y, letter)
-        .play("letter_" + letter)
-        .setScale(scale)
+    this.scene.anims.create({
+      key: "bubble",
+      frames: this.scene.anims.generateFrameNumbers("bubble", {
+        frames: [0, 1, 2],
+      }),
+      frameRate: 3,
+      repeat: -1,
+    });
+
+    const words = text.split(" ").map((word: string) => word.split(""));
+    const wordsContainer = this.scene.add.container(
+      0,
+      0,
+      words.reduce(
+        (
+          acc: Phaser.GameObjects.Container[],
+          letters: string[],
+          currIndex: number
+        ) => {
+          const path = { t: 0, vec: new Phaser.Math.Vector2() };
+          const startPoint = new Phaser.Math.Vector2(x, y - 30);
+          var controlPoint1 = new Phaser.Math.Vector2(x + 50, y - 20);
+          var controlPoint2 = new Phaser.Math.Vector2(x + 100, y);
+          var endPoint = new Phaser.Math.Vector2(x - 50, y + 20);
+          var curve = new Phaser.Curves.CubicBezier(
+            startPoint,
+            controlPoint1,
+            controlPoint2,
+            endPoint
+          );
+          const xPos = curve.getPoint(currIndex / words.length, path.vec);
+          const container = this.scene.add.container(
+            xPos.x,
+            xPos.y,
+            letters.map((letter, i) => {
+              const sprite = this.scene.add
+                .sprite(i * (32 * scale), 0, letter)
+                .setTint(0x000000)
+                .play("letter_" + letter)
+                .setScale(scale);
+
+              return sprite;
+            })
+          );
+
+          acc.push(container);
+          return acc;
+        },
+        []
+      ) as Phaser.GameObjects.Container[]
     );
+
+    return wordsContainer;
   }
 );
