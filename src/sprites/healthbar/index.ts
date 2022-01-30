@@ -3,7 +3,7 @@ import Phaser from "phaser";
 import "./HealthChunk";
 import "./HealthCap";
 
-export default class HealthBar extends Phaser.GameObjects.Container {
+export class HealthBar extends Phaser.GameObjects.Container {
   maxHealth: number;
   constructor(scene: Phaser.Scene, x: number, y: number, healthAmount: number) {
     super(scene, x, y);

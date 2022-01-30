@@ -1,44 +1,44 @@
-import sha256 from "crypto-js/sha256";
 import { shuffle } from "lodash";
 import Phaser from "phaser";
 import {
-  BattleKeys,
-  BattleState,
-  BattleStateManager,
-  CellSprite,
-  MiniGrid,
-  NonogramData,
-  Puzzle,
-  PuzzleSet,
-} from "../../../types/puzzle";
-import cell from "../../assets/sprites/cell.png";
-import cellSelected from "../../assets/sprites/cell_selected.png";
-import emptyHealthBar from "../../assets/sprites/empty_health_bar.png";
-import emptyHealthCap from "../../assets/sprites/empty_health_cap.png";
-import fullHealthBar from "../../assets/sprites/full_health_bar.png";
-import fullHealthCap from "../../assets/sprites/full_health_cap.png";
-import letters from "../../assets/sprites/letters.png";
-import numbers from "../../assets/sprites/numbers.png";
-import player from "../../assets/sprites/player.png";
+  cell,
+  cellSelected,
+  numbers,
+  player,
+  letters,
+  fullHealthBar,
+  fullHealthCap,
+  emptyHealthBar,
+  emptyHealthCap,
+} from "../../assets/sprites";
 import { CellState } from "../../common";
-import { buildMinigrid } from "../../helpers";
-import "../../sprites";
-import type Nonogram from "../../sprites/nonogram";
-import type Player from "../../sprites/player";
+import { HealthBar, Player, Nonogram, MiniGrid } from "../../sprites";
+import { width, scale, height } from "./constants";
 
-const width = 800;
-const height = 600;
-const scale = 2;
-
+/**
+ * @class Battle
+ * @property {PuzzleSet} puzzleSet the current set of puzzles that need to be completed to win the battle.
+ * @property {Puzzle} puzzle the current puzzle being played.
+ * @property {number} currentPuzzleSection the index of the current part of the puzzle that is in progress. used for puzzles with multiple nonograms.
+ * @property {number} currentPuzzleIndex the index of the current puzzle being solved out of the puzzle set.
+ * @property {Nonogram} currentNonogram the current nonogram being played.
+ * @property {number[]} completedPuzzles an array of puzzle section indices that have been completed.
+ * @property {NonoGram} nonogram a container for the current nonogram being played
+ * @property {MiniGrid[]} minigrids an array of minigrids shown on the battle screen for completed puzzles to appear in.
+ */
 class Battle extends Phaser.Scene {
-  public battleState!: BattleStateManager;
   public puzzleSet: PuzzleSet;
+  public puzzle: Puzzle;
+  public currentPuzzleSection: number;
+  public currentPuzzleIndex: number;
+  public completedPuzzles: number[];
   public keys?: BattleKeys;
   public emitter?: Phaser.GameObjects.Particles.ParticleEmitter;
-  public healthbar!: IHealthBar;
+  public healthbar!: HealthBar;
   public timerEvents?: Phaser.Time.TimerEvent[];
   public player!: Player;
-  public nonogram?: Nonogram;
+  public nonogram!: Nonogram;
+  public minigrids: MiniGrid[];
 
   constructor(
     config: Phaser.Types.Scenes.SettingsConfig,
@@ -46,9 +46,16 @@ class Battle extends Phaser.Scene {
   ) {
     super(config);
     this.puzzleSet = puzzleSet;
+    this.puzzle = puzzleSet[0];
+    this.currentPuzzleSection = 0;
+    this.currentPuzzleIndex = 0;
+    this.completedPuzzles = [];
+    this.minigrids = [];
   }
 
   preload() {
+    import("../../sprites");
+
     [
       ["cell", cell],
       ["cellSelected", cellSelected],
@@ -68,15 +75,6 @@ class Battle extends Phaser.Scene {
   }
 
   create() {
-    this.battleState.set({
-      dragging: this.add.group(),
-      puzzle: this.puzzleSet[0],
-      currentNonogram: this.puzzleSet[0].puzzles[0],
-      currentPuzzleSection: 0,
-      currentPuzzleIndex: 0,
-      completedPuzzles: [],
-    });
-
     // Setup keyboard controls
     this.keys = this.input.keyboard.addKeys({
       up: Phaser.Input.Keyboard.KeyCodes.W,
@@ -99,19 +97,10 @@ class Battle extends Phaser.Scene {
     }
 
     // Add minigrids
-    this.battleState.set(
-      "minigrids",
-      buildMinigrid(this, height, width, scale, this.puzzleSet)
-    );
+    this.minigrids = this.buildMiniGrids();
 
-    // Print picross puzzle
-    const { puzzle, currentPuzzleSection } = this.battleState.values;
-
-    const currPuzz = puzzle.puzzles[currentPuzzleSection];
-    const middle = width - currPuzz.width * 32 * scale;
-    const bottom = height - currPuzz.height * 32 * scale;
-
-    this.nonogram = this.add.nonogram(middle, bottom, currPuzz);
+    // Initialize and render nonogram
+    this.nonogram = this.add.nonogram(this.puzzleSet[0].puzzles[0]).render();
 
     // Add Player
     this.player = this.add.player(this.nonogram.x, this.nonogram.y);
@@ -133,194 +122,58 @@ class Battle extends Phaser.Scene {
 
   hurtPlayer() {
     this.player?.removeHealth(1);
-    // this.healthbar.setHealth(this.player.removeHealth(1));
-  }
-
-  selectCell(cell: ICell, { dragging }: BattleState) {
-    if (this.keys?.select?.isDown) {
-      this.setCellHoverStyles(cell);
-
-      if (!dragging.contains(cell)) {
-        dragging.add(cell);
-      }
-    }
-  }
-
-  fillCell(c: CellSprite, index: number, scale: number) {
-    c.setState(CellState.selected);
-    this.animateSelectCell(c, index, scale);
-  }
-
-  animateSelectCell(c: CellSprite, index: number, scale: number) {
-    c.setAlpha(0.5);
-
-    this.tweens.add({
-      targets: c,
-      alpha: 1,
-      ease: "Stepped",
-      delay: 500 / (index + 1),
-      scale: scale,
-      onStart: () => {
-        if (c.state === CellState.selected) {
-          this.emitter?.explode(6, c.x, c.y);
-          this.cameras.main.shake(600 / (index + 1), 0.02 / (index + 1));
-        }
-      },
-    });
-
-    c.play(
-      c.state === CellState.selected
-        ? this.getSelectedAnimation()
-        : this.getEmptyAnimation()
-    );
-  }
-
-  // isPuzzzleSolved(puzz: NonogramData) {
-  //   let result = "";
-  //   for (var x = 0; x < puzz.height; x++) {
-  //     for (var y = 0; y < puzz.width; y++) {
-  //       if (this.nonogram?.getCell({ x, y }).state === CellState.selected) {
-  //         result += `${x}${y}`;
-  //       }
-  //     }
-  //   }
-
-  //   return sha256(result).toString() === puzz.resultSha;
-  // }
-
-  setCellStyle(cell: ICell, scale = 2) {
-    cell.state === CellState.selected
-      ? this.setCellSelectedStyles(cell, scale)
-      : this.setCellEmptyStyles(cell, scale);
-  }
-
-  setCellSelectedStyles(cell: ICell, scale = 2) {
-    cell.play(this.getSelectedAnimation());
-    cell.setAlpha(1);
-    cell.setCrop(0, 0, 32, 32);
-    cell.setScale(scale);
-  }
-
-  setCellEmptyStyles(cell: ICell, scale = 2) {
-    cell.setState(CellState.empty);
-    cell.setCrop(0, 0, 32, 32);
-    cell.setAlpha(1);
-    cell.setScale(scale);
-    cell.play(this.getEmptyAnimation());
-  }
-
-  setCellHoverStyles(cell: ICell, scale = 2) {
-    cell.play(this.getSelectedAnimation()).setAlpha(0.8);
-    cell.setCrop(1, 1, 30, 30);
-    cell.setScale(scale * 0.8);
-  }
-
-  setCellDisabledStyles(cell: ICell, scale = 2) {
-    cell.play(this.getEmptyAnimation()).setAlpha(0.3);
-    cell.setCrop(1, 1, 30, 30);
-    cell.setScale(scale * 0.8);
-  }
-
-  getEmptyAnimation() {
-    return this.getRandomAnimation("empty", 5);
-  }
-
-  getSelectedAnimation() {
-    return this.getRandomAnimation("selected", 5);
-  }
-
-  getRandomAnimation(string: string, length = 5) {
-    return string + "_" + Math.floor(Math.random() * length);
   }
 
   handlePuzzleUpdate() {
     if (this.nonogram?.isPuzzleSolved()) {
-      const {
-        currentPuzzleSection,
-        currentNonogram,
-        completedPuzzles,
-        currentPuzzleIndex,
-        minigrids,
-      } = this.battleState.values;
-
       // this.keys?.select.removeAllListeners();
       this.nonogram?.rowClues?.map((r) => r.map((c) => c.setVisible(false)));
       this.nonogram?.colClues?.map((r) => r.map((c) => c.setVisible(false)));
-      const solvedContainer = this.nonogram;
+      const solvedContainer = this.nonogram.container;
+
       let currentMinigrid;
-      if (minigrids) {
-        currentMinigrid = minigrids[currentPuzzleIndex];
+      if (this.minigrids) {
+        currentMinigrid = this.minigrids[this.currentPuzzleIndex];
       }
-      const currentPuzz = this.puzzleSet[currentPuzzleIndex];
-      const currentPuzzSection = currentPuzzleSection;
+      const currentPuzz = this.puzzle;
+      const currentPuzzSection = this.currentPuzzleSection;
+
       this.player.resetHealth();
-      console.log("currentPuzzSection first", currentPuzzSection);
 
       // All nonograms complete, reset to a new set puzzle in the set.
       if (currentPuzzSection === currentPuzz.puzzles.length - 1) {
-        this.battleState.set({
-          currentPuzzleSection: 0,
-          completedPuzzles: [...completedPuzzles, currentPuzzleIndex],
-        });
+        this.currentPuzzleSection = 0;
+        this.completedPuzzles.push(this.currentPuzzleIndex);
 
-        if (completedPuzzles.length === this.puzzleSet.length) {
-          console.log("BATTLE OVER!");
+        if (this.completedPuzzles.length === this.puzzleSet.length) {
+          console.log("BATTLE OVER");
         }
 
         const unfinishedPuzzlesIndexes = this.puzzleSet
-          .map((p, i) => i)
-          .filter((p, i) => !completedPuzzles.includes(i));
+          .map((_p, i) => i)
+          .filter((_p, i) => !this.completedPuzzles.includes(i));
 
         const randomPuzzleIndex =
           unfinishedPuzzlesIndexes[
             Math.floor(Math.random() * unfinishedPuzzlesIndexes.length)
           ];
 
-        console.log("next nono", this.puzzleSet[randomPuzzleIndex].puzzles[0]);
-
-        this.battleState.set({
-          puzzle: this.puzzleSet[randomPuzzleIndex],
-          currentPuzzleIndex: randomPuzzleIndex,
-          currentNonogram: this.puzzleSet[randomPuzzleIndex].puzzles[0],
-        });
-
-        const middle =
-          width - this.battleState.values.currentNonogram.width * 32 * scale;
-        const bottom =
-          height - this.battleState.values.currentNonogram.height * 32 * scale;
+        this.puzzle = this.puzzleSet[randomPuzzleIndex];
+        this.currentPuzzleIndex = randomPuzzleIndex;
 
         this.time.delayedCall(1000, () => {
-          this.nonogram = this.add.nonogram(
-            middle,
-            bottom,
-            this.battleState.get("currentNonogram")
-          );
+          this.nonogram = this.add.nonogram(this.puzzle.puzzles[0]).render();
         });
       } else {
         // Iterate to the next nonogram in the current puzzle.
-        this.battleState.set({
-          currentPuzzleSection:
-            this.battleState.values.currentPuzzleSection + 1,
-          currentNonogram:
-            this.battleState.values.puzzle.puzzles[currentPuzzleSection + 1],
-        });
-
-        console.log("currentPuzzleSection", currentPuzzSection);
+        this.currentPuzzleSection += 1;
 
         this.time.delayedCall(
           1000,
           () => {
-            if (this.nonogram?.nonogramData.width) {
-              const middle =
-                width - this.nonogram?.nonogramData.width * 32 * scale;
-              const bottom =
-                height - this.nonogram?.nonogramData.height * 32 * scale;
-              this.nonogram = this.add.nonogram(
-                middle,
-                bottom,
-                this.battleState.get("currentNonogram")
-              );
-            }
+            this.nonogram = this.add
+              .nonogram(this.puzzle.puzzles[this.currentPuzzleSection])
+              .render();
           },
           [],
           this
@@ -385,10 +238,6 @@ class Battle extends Phaser.Scene {
                   puzzleName: string
                 ) => {
                   const offset = 5;
-                  console.log(
-                    "currentPuzzleSection in tween",
-                    currentPuzzleSection
-                  );
                   if (currentPuzzleSection > 0) {
                     // The current nonogram is part of a set of a larger image so set it within the minigrid.
                     nonogram.x =
@@ -432,6 +281,26 @@ class Battle extends Phaser.Scene {
         this
       );
     }
+  }
+
+  private buildMiniGrids(): MiniGrid[] {
+    const bottomAlign = (x: number) => x + height - 32 * scale - 32 * scale;
+    const leftAlign = (x: number) => x + 32;
+
+    return this.puzzleSet.map((puzz, index) => {
+      const margin = 10 * index;
+      const minigrid = this.add.minigrid(
+        leftAlign(
+          this.puzzleSet.length * scale +
+            32 * scale * index +
+            margin * this.puzzleSet.length
+        ),
+        bottomAlign(32),
+        puzz
+      );
+
+      return minigrid;
+    });
   }
 
   update() {

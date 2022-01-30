@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import letters from "../../assets/sprites/letters.png";
+import { letters } from "../../assets/sprites";
 
 const letterMap = [
   "a",

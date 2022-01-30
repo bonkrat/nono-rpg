@@ -1,7 +1,7 @@
-import { CellSprite, NonogramData } from "../../types/puzzle";
 import { CellState } from "../common";
+import { Cell } from "../sprites";
 
-export function isValidPuzzle(puzzle: NonogramData, cells: CellSprite[][]) {
+export function isValidPuzzle(puzzle: NonogramData, cells: Cell[][]) {
   const { width, height } = puzzle,
     rows = cells.map((row) =>
       row.map((cell) => cell?.state == CellState.selected)

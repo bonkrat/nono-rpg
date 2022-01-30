@@ -1,42 +1,70 @@
 import sha256 from "crypto-js/sha256";
 import { chunk, isEqual, times } from "lodash";
 import Phaser from "phaser";
-import { Coordinates, NonogramData, Puzzle } from "../../../types/puzzle";
+import { Cell } from "..";
 import { CellState } from "../../common";
-import generateClues from "../../helpers/generateClues";
 import Battle from "../../scenes/battle";
-import { scale } from "../../scenes/battle/constants";
-import "../cell";
+import { height, scale, width } from "../../scenes/battle/constants";
 
-export default class Nonogram extends Phaser.GameObjects.Container {
+export class Nonogram {
   nonogramData: NonogramData;
   rowClues: Phaser.GameObjects.Sprite[][];
   colClues: Phaser.GameObjects.Sprite[][];
+  scene: Phaser.Scene;
+  container: Phaser.GameObjects.Container;
 
-  constructor(scene: Battle, x: number, y: number, data: NonogramData) {
-    super(scene, x, y);
+  constructor(scene: Battle, data: NonogramData) {
+    this.scene = scene;
     this.nonogramData = data;
+    this.container = scene.add.container();
 
-    let cells: ICell[][] = [];
-    for (var i = 0; i < this.nonogramData.height; i++) {
-      for (var j = 0; j < this.nonogramData.width; j++) {
+    let cells: Cell[][] = [];
+    times(this.nonogramData.height, (i) => {
+      times(this.nonogramData.width, (j) => {
         const cell = scene.add.cell(32 * i * scale, 32 * j * scale);
         if (!cells[j]) {
           cells[j] = [];
         }
 
-        cells[j][i] = cell as ICell;
+        cells[j][i] = cell as Cell;
 
         this.add(cell);
-
-        cell.setScale(scale);
-        cell.play(scene.getEmptyAnimation());
-      }
-    }
+      });
+    });
 
     const { rowClues, colClues } = this.buildClues();
     this.rowClues = rowClues;
     this.colClues = colClues;
+
+    const particles = scene.add.particles("cellSelected");
+
+    scene.emitter = particles.createEmitter({
+      frame: 0,
+      lifespan: 1000,
+      speed: 600,
+      gravityY: 2000,
+      scale: { start: scale, end: 0.5 },
+      rotate: { start: 0, end: 360, ease: "Power2" },
+      on: false,
+    });
+
+    this.addParticles(particles);
+
+    return this;
+  }
+
+  render(coords?: Coordinates) {
+    const middle = width - this.nonogramData.width * 32 * scale;
+    const bottom = height - this.nonogramData.height * 32 * scale;
+
+    const x = coords?.x || middle,
+      y = coords?.y || bottom;
+
+    this.container.setPosition(x, y);
+
+    this.getAll().forEach((cell: Cell) => {
+      cell.playEmptyAnimation();
+    });
 
     this.nonogramData.hint?.cells.forEach((c, i) => {
       const cell =
@@ -51,61 +79,47 @@ export default class Nonogram extends Phaser.GameObjects.Container {
             });
 
       if (c.selected) {
-        scene.fillCell(cell as ICell, i, scale);
+        cell.fillCell();
       }
     });
 
-    const particles = scene.add.particles("cellSelected");
-
-    scene.emitter = particles.createEmitter({
-      frame: 0,
-      lifespan: 1000,
-      speed: 600,
-      //   alpha: { start: 1, end: 0 },
-      gravityY: 2000,
-      scale: { start: scale, end: 0.5 },
-      rotate: { start: 0, end: 360, ease: "Power2" },
-      //   blendMode: "ADD",
-      on: false,
-    });
-
-    this.addParticles(particles);
-
     this.setCompletedRowsAndColumns();
+
+    return this;
   }
 
   addParticles(particles: Phaser.GameObjects.Particles.ParticleEmitterManager) {
-    return super.add(particles);
+    return this.container.add(particles);
   }
 
-  add(cell: ICell | ICell[]) {
-    return super.add(cell);
+  add(cell: Cell | Cell[]) {
+    return this.container.add(cell);
   }
 
-  getCell({ x, y }: Coordinates) {
-    const { puzzle, currentPuzzleSection } = (this.scene as Battle).battleState
-      .values;
-    return this.getAt(y * puzzle.puzzles[currentPuzzleSection].width + x);
+  getCell({ x, y }: Coordinates): Cell {
+    const { puzzle, currentPuzzleSection } = this.scene as Battle;
+    return this.container.getAt(
+      y * puzzle.puzzles[currentPuzzleSection].width + x
+    ) as Cell;
   }
 
-  getAll() {
-    return super.getAll("type", "Cell");
+  getAll(): Cell[] {
+    return this.container.getAll("type", "Cell") as Cell[];
   }
 
-  getColumns(): ICell[][] {
-    return chunk(this.getAll(), this.nonogramData.width) as ICell[][];
+  getColumns(): Cell[][] {
+    return chunk(this.getAll(), this.nonogramData.width) as Cell[][];
   }
 
-  getRows(): ICell[][] {
+  getRows(): Cell[][] {
     const cols = this.getColumns();
 
     return times(this.nonogramData.height, (i) =>
       cols.map((col) => col[i])
-    ) as ICell[][];
+    ) as Cell[][];
   }
 
   setCompletedRowsAndColumns() {
-    const scene = this.scene as Battle;
     if (!this.isPuzzleSolved()) {
       // Rows first
       const rowClues: number[][] = [];
@@ -120,7 +134,7 @@ export default class Nonogram extends Phaser.GameObjects.Container {
           }
           return acc;
         }, []);
-        rowClues.push(generateClues(selected));
+        rowClues.push(Nonogram.generateClues(selected));
       });
 
       this.nonogramData.rowClues.forEach((r, i) => {
@@ -128,14 +142,14 @@ export default class Nonogram extends Phaser.GameObjects.Container {
           rows[i].forEach((c) => {
             if (c.state !== CellState.selected) {
               c.setState(CellState.disabled);
-              scene.setCellDisabledStyles(c, scale);
+              c.setCellDisabledStyles();
             }
           });
         } else {
           rows[i].forEach((c) => {
             if (c.state !== CellState.selected) {
               c.setState(CellState.disabled);
-              scene.setCellEmptyStyles(c, scale);
+              c.setCellEmptyStyles();
             }
           });
         }
@@ -151,7 +165,7 @@ export default class Nonogram extends Phaser.GameObjects.Container {
           }
           return acc;
         }, []);
-        colClues.push(generateClues(selected));
+        colClues.push(Nonogram.generateClues(selected));
       });
 
       this.nonogramData.colClues.forEach((r, i) => {
@@ -159,13 +173,17 @@ export default class Nonogram extends Phaser.GameObjects.Container {
           cols[i].forEach((c) => {
             if (c.state !== CellState.selected) {
               c.setState(CellState.disabled);
-              scene.setCellDisabledStyles(c, scale);
+              c.setCellDisabledStyles();
             }
           });
         } else {
           cols[i].forEach((c) => {
-            if (![CellState.disabled, CellState.selected].includes(c.state)) {
-              scene.setCellEmptyStyles(c, scale);
+            if (
+              ![CellState.disabled, CellState.selected].includes(
+                c.state as CellState
+              )
+            ) {
+              c.setCellEmptyStyles();
             }
           });
         }
@@ -181,8 +199,9 @@ export default class Nonogram extends Phaser.GameObjects.Container {
           32 * i * scale - 32 / 4,
           "clue"
         );
+        clueSprite.type = "Clue";
 
-        this.add(clueSprite);
+        this.container.add(clueSprite);
         clueSprite.play("number_" + clue);
 
         return clueSprite;
@@ -196,9 +215,10 @@ export default class Nonogram extends Phaser.GameObjects.Container {
           0 - 32 * scale - j * scale * 32 - 32 / 4,
           "clue"
         );
+        clueSprite.type = "Clue";
 
         clueSprite.play("number_" + clue);
-        this.add(clueSprite);
+        this.container.add(clueSprite);
 
         return clueSprite;
       });
@@ -218,20 +238,48 @@ export default class Nonogram extends Phaser.GameObjects.Container {
 
     return sha256(result).toString() === this.nonogramData.resultSha;
   }
+
+  /**
+   * Calculates the groups of selected cells for the nonogram.
+   * e.g., [0,1,2,4,5,6,9,10] becomes [3, 2, 2, 1].
+   */
+  static generateClues(cells: number[]) {
+    cells.sort((a, b) => a - b);
+    const result = cells.reduce((acc: number[], curr, index) => {
+      if (index && curr === cells[index - 1] + 1) {
+        acc[acc.length - 1] += 1;
+      } else {
+        acc.push(1);
+      }
+      return acc;
+    }, []);
+
+    return !result.length ? [0] : result;
+  }
+
+  get x() {
+    return this.container.x;
+  }
+
+  set x(newX: number) {
+    this.container.x = newX;
+  }
+
+  get y() {
+    return this.container.y;
+  }
+
+  set y(newY: number) {
+    this.container.y = newY;
+  }
 }
 
 Phaser.GameObjects.GameObjectFactory.register(
   "nonogram",
-  function (
-    this: Phaser.GameObjects.GameObjectFactory,
-    x: number,
-    y: number,
-    data: NonogramData
-  ) {
-    const nonogram = new Nonogram(this.scene as Battle, x, y, data);
+  function (this: Phaser.GameObjects.GameObjectFactory, data: NonogramData) {
+    const nonogram = new Nonogram(this.scene as Battle, data);
 
-    this.displayList.add(nonogram);
-
+    this.displayList.add(nonogram.container);
     return nonogram;
   }
 );

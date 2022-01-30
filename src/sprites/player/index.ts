@@ -1,24 +1,21 @@
 import { shuffle } from "lodash";
-import {
-  BattleKey,
-  BattleState,
-  Coordinates,
-  NonogramData,
-} from "../../../types/puzzle";
+import { Cell } from "..";
 import { CellState } from "../../common";
 import Battle from "../../scenes/battle";
-import { height, scale, width } from "../../scenes/battle/constants";
+import { scale } from "../../scenes/battle/constants";
 
-export default class Player extends Phaser.GameObjects.Sprite {
-  currentCell: { x: number; y: number };
+export class Player extends Phaser.GameObjects.Sprite {
+  currentCell: Coordinates;
   health: number;
   initialHealth: number;
+  dragging: Cell[];
 
   constructor(scene: Battle, x: number, y: number) {
     super(scene, x, y, "player");
     this.currentCell = { x: 0, y: 0 } as Coordinates;
     this.health = 5;
     this.initialHealth = this.health;
+    this.dragging = [];
 
     this.anims.create({
       key: "player",
@@ -67,7 +64,7 @@ export default class Player extends Phaser.GameObjects.Sprite {
 
   move(key: BattleKey) {
     const scene = this.scene as Battle;
-    const { dragging } = scene.battleState.values;
+    const { dragging, currentCell } = this;
     const keys = scene.keys;
     const nonogram = scene.nonogram;
     const data = nonogram?.nonogramData;
@@ -86,16 +83,19 @@ export default class Player extends Phaser.GameObjects.Sprite {
       scene.tweens.add({
         targets: this,
         duration: 150,
-        x: nonogram.x + this.currentCell.y * 32 * scale,
-        y: nonogram.y + this.currentCell.x * 32 * scale,
+        x: nonogram.x + currentCell.y * 32 * scale,
+        y: nonogram.y + currentCell.x * 32 * scale,
         ease: "Bounce",
-        onStart: () =>
-          scene.selectCell(
-            nonogram.getCell(this.currentCell) as ICell,
-            {
-              dragging,
-            } as BattleState
-          ),
+        onStart: function () {
+          if (scene.keys?.select?.isDown) {
+            const sprite = scene.nonogram.getCell(currentCell);
+            sprite.setCellHoverStyles();
+
+            if (!dragging.includes(sprite)) {
+              dragging.push(sprite);
+            }
+          }
+        },
       });
     }
   }
@@ -109,20 +109,17 @@ export default class Player extends Phaser.GameObjects.Sprite {
 
       const c = scene.nonogram?.getCell({ x, y });
       if (c) {
-        scene.setCellHoverStyles(c as ICell);
-        scene.battleState.set(
-          "dragging",
-          scene.battleState.values.dragging.add(c)
-        );
+        c.setCellHoverStyles();
+        this.dragging.push(c);
       }
     });
 
     scene.keys?.select.on("up", () => {
-      const dragging = scene.battleState.get("dragging");
+      const dragging = this.dragging;
 
-      dragging.children.iterate((c: ICell, i: number) => {
+      dragging.forEach((c: Cell, i: number) => {
         // Only one in the dragged cells, so just inverse it!
-        if (dragging.getLength() > 1) {
+        if (dragging.length > 1) {
           c.setState(CellState.selected);
         } else {
           c.setState(
@@ -156,12 +153,12 @@ export default class Player extends Phaser.GameObjects.Sprite {
 
         c.play(
           c.state === CellState.selected
-            ? scene.getSelectedAnimation()
-            : scene.getEmptyAnimation()
+            ? c.getSelectedAnimation()
+            : c.getEmptyAnimation()
         );
       });
 
-      scene.battleState.values.dragging.clear();
+      this.dragging = [];
 
       // Check for solved puzzle and build next if it is solved
       scene.handlePuzzleUpdate();

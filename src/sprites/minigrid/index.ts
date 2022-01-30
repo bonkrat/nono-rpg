@@ -1,16 +1,15 @@
 import Phaser from "phaser";
-import { NonogramData, Puzzle } from "../../../types/puzzle";
-import Battle from "../../scenes/battle";
+import { Cell } from "..";
+import type Battle from "../../scenes/battle";
 import { scale } from "../../scenes/battle/constants";
-import "../../sprites/cell";
 
-export default class MiniGrid extends Phaser.GameObjects.Container {
+export class MiniGrid extends Phaser.GameObjects.Container {
   constructor(scene: Battle, x: number, y: number, puzzle?: Puzzle) {
     super(scene, x, y);
 
     if (puzzle) {
       this.add(
-        puzzle.puzzles.map((p: NonogramData, i: number) => {
+        puzzle.puzzles.map((_p: NonogramData, i: number) => {
           const s = scene.add
             .cell(
               i === 0 || i === 2
@@ -21,7 +20,7 @@ export default class MiniGrid extends Phaser.GameObjects.Container {
                 : 32 * (scale / (puzzle.puzzles.length / 2))
             )
             .setOrigin(0, 0)
-            .play(scene.getEmptyAnimation());
+            .playEmptyAnimation();
 
           puzzle.puzzles.length > 1
             ? s.setScale(scale / (puzzle.puzzles.length / 2))
@@ -34,8 +33,8 @@ export default class MiniGrid extends Phaser.GameObjects.Container {
     }
   }
 
-  add(cell: ICell | ICell[]) {
-    return super.add(cell);
+  getAt(index: number): Cell {
+    return super.getAt(index) as Cell;
   }
 }
 
