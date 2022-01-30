@@ -100,7 +100,7 @@ class Battle extends Phaser.Scene {
     this.minigrids = this.buildMiniGrids();
 
     // Initialize and render nonogram
-    this.nonogram = this.add.nonogram(this.puzzleSet[0].puzzles[0]).render();
+    this.nonogram = this.add.nonogram(this.puzzleSet[0].puzzles[0]).draw();
 
     // Add Player
     this.player = this.add.player(this.nonogram.x, this.nonogram.y);
@@ -162,7 +162,7 @@ class Battle extends Phaser.Scene {
         this.currentPuzzleIndex = randomPuzzleIndex;
 
         this.time.delayedCall(1000, () => {
-          this.nonogram = this.add.nonogram(this.puzzle.puzzles[0]).render();
+          this.nonogram = this.add.nonogram(this.puzzle.puzzles[0]).draw();
         });
       } else {
         // Iterate to the next nonogram in the current puzzle.
@@ -173,7 +173,7 @@ class Battle extends Phaser.Scene {
           () => {
             this.nonogram = this.add
               .nonogram(this.puzzle.puzzles[this.currentPuzzleSection])
-              .render();
+              .draw();
           },
           [],
           this

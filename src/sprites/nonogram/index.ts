@@ -53,7 +53,7 @@ export class Nonogram {
     return this;
   }
 
-  render(coords?: Coordinates) {
+  draw(coords?: Coordinates) {
     const middle = width - this.nonogramData.width * 32 * scale;
     const bottom = height - this.nonogramData.height * 32 * scale;
 
