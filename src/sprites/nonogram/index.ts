@@ -262,7 +262,7 @@ export class Nonogram {
   }
 
   set x(newX: number) {
-    this.container.x = newX;
+    this.container.setX(newX);
   }
 
   get y() {
@@ -270,7 +270,7 @@ export class Nonogram {
   }
 
   set y(newY: number) {
-    this.container.y = newY;
+    this.container.setY(newY);
   }
 }
 
