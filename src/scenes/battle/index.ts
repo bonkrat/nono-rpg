@@ -13,7 +13,11 @@ import {
 } from "../../assets/sprites";
 import { CellState } from "../../common";
 import { HealthBar, Player, Nonogram, MiniGrid } from "../../sprites";
+import { Enemy } from "../../sprites/enemies/enemy";
+import { Karen } from "../../sprites/enemies/Karen";
 import { width, scale, height } from "./constants";
+import("../../sprites");
+import "../../sprites/enemies/Karen";
 
 /**
  * @class Battle
@@ -39,6 +43,7 @@ class Battle extends Phaser.Scene {
   public player!: Player;
   public nonogram!: Nonogram;
   public minigrids: MiniGrid[];
+  public enemy?: Enemy;
 
   constructor(
     config: Phaser.Types.Scenes.SettingsConfig,
@@ -54,8 +59,6 @@ class Battle extends Phaser.Scene {
   }
 
   preload() {
-    import("../../sprites");
-
     [
       ["cell", cell],
       ["cellSelected", cellSelected],
@@ -74,7 +77,7 @@ class Battle extends Phaser.Scene {
     });
   }
 
-  create() {
+  async create() {
     // Setup keyboard controls
     this.keys = this.input.keyboard.addKeys({
       up: Phaser.Input.Keyboard.KeyCodes.W,
@@ -112,16 +115,7 @@ class Battle extends Phaser.Scene {
       this.player.health
     );
 
-    this.time.addEvent({
-      delay: Phaser.Math.Between(2000, 3000),
-      loop: true,
-      callback: this.hurtPlayer,
-      callbackScope: this,
-    });
-  }
-
-  hurtPlayer() {
-    this.player?.removeHealth(1);
+    this.enemy = (await this.add.enemy(Karen)).draw(150, 250);
   }
 
   handlePuzzleUpdate() {
@@ -305,7 +299,8 @@ class Battle extends Phaser.Scene {
 
   update() {
     // Update healthbar status
-    this.healthbar.setHealth(this.player.health);
+    // this.healthbar.setHealth(this.player.health);
+
     for (const k in this?.keys) {
       const key = this?.keys[k];
 

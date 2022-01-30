@@ -46,9 +46,17 @@ type BattleKeys = {
   [s in PlayerInput as string]: BattleKey;
 };
 
+interface EnemyClass {
+  new (
+    ...params: ConstructorParameters<
+      typeof import("./sprites/enemies/enemy").Enemy
+    >
+  ): import("./sprites/enemies/enemy").Enemy;
+}
+
 declare namespace Phaser.GameObjects {
   interface GameObjectFactory {
-    nonogram(nonogramData: NonogramData): Nonogram;
+    nonogram(nonogramData: NonogramData): import("./sprites/nonogram").Nonogram;
     cell(x: number, y: number): Cell;
     healthbar(x: number, y: number, healthAmount: number): HealthBar;
     healthcap(x: number, y: number): HealthCap;
@@ -61,5 +69,8 @@ declare namespace Phaser.GameObjects {
       y: number,
       scale: number
     ): Phaser.GameObjects.Sprite[];
+    enemy(
+      EnemyClass: EnemyClass
+    ): Promise<import("./sprites/enemies/enemy").Enemy>;
   }
 }

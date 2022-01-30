@@ -11,9 +11,7 @@ const config = {
   parent: "nono-rpg",
   width,
   height,
-  scene: function () {
-    return new Battle({}, [animals[0], puzzles[0], puzzles[1]]);
-  },
+  scene: new Battle({}, [animals[0], puzzles[0], puzzles[1]]),
   pixelArt: true,
 };
 
