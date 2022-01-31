@@ -4,8 +4,6 @@ import { puzzles } from "../../puzzles";
 import type Battle from "../../scenes/battle";
 import { shuffle } from "lodash";
 
-const NAME = "Karen";
-
 const ASSETS = [
   { url: karen, frameConfig: { frameWidth: 128, frameHeight: 182 } },
 ];
@@ -38,4 +36,4 @@ export class Karen extends Enemy {
   }
 }
 
-Enemy.register(NAME);
+Enemy.register();

@@ -109,7 +109,7 @@ export abstract class Enemy extends AssetLoader {
     this.key = name;
   }
 
-  static register(name: string) {
+  static register() {
     AssetLoader.register(
       "enemy",
       function (

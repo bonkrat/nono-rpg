@@ -1,5 +1,3 @@
-import { Puzzle } from "../../../types/puzzle";
-
 export default [
   {
     name: "Duck",

@@ -4,8 +4,6 @@ import { puzzles } from "../../puzzles";
 import Battle from "../../scenes/battle";
 import { shuffle } from "lodash";
 
-const NAME = "DogWalker";
-
 const ASSETS = [
   { url: dogwalker, frameConfig: { frameWidth: 128, frameHeight: 129 } },
 ];
@@ -37,4 +35,4 @@ export class DogWalker extends Enemy {
   }
 }
 
-Enemy.register(NAME);
+Enemy.register();
