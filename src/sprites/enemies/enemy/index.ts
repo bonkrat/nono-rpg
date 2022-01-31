@@ -12,7 +12,7 @@ const BASE_ENEMY_ASSETS = [
 
 export abstract class Enemy extends AssetLoader {
   public abstract dialogue: string[];
-  public static puzzleSet: PuzzleSet;
+  public abstract puzzleSet: PuzzleSet;
   protected scene: Phaser.Scene;
   protected speech!: Phaser.GameObjects.Container;
   protected sprite!: Phaser.GameObjects.Sprite;
@@ -117,7 +117,7 @@ export abstract class Enemy extends AssetLoader {
         EnemyClass: EnemyClass
       ): Enemy {
         const enemy = new EnemyClass(this.scene);
-        enemy.name = name;
+        enemy.name = EnemyClass.name;
 
         return enemy;
       }

@@ -1,18 +1,18 @@
 import { Enemy } from "./enemy";
-import karen from "../../assets/sprites/enemies/karen.png";
+import ghost from "../../assets/sprites/enemies/ghost.png";
 import { puzzles } from "../../puzzles";
 import type Battle from "../../scenes/battle";
 import { shuffle } from "lodash";
 
-const NAME = "Karen";
+const NAME = "Ghost";
 
 const ASSETS = [
-  { url: karen, frameConfig: { frameWidth: 128, frameHeight: 182 } },
+  { url: ghost, frameConfig: { frameWidth: 128, frameHeight: 128 } },
 ];
 
-export class Karen extends Enemy {
-  puzzleSet = shuffle(puzzles).slice(0, 1);
-  dialogue = ["foobar baz biz", "baz qix "];
+export class Ghost extends Enemy {
+  puzzleSet = shuffle(puzzles).slice(0, 2);
+  dialogue = ["ooooooo", "aaaaaa"];
 
   constructor(scene: Phaser.Scene) {
     super(scene, ASSETS);

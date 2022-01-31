@@ -10,15 +10,13 @@ import {
   fullHealthCap,
   emptyHealthBar,
   emptyHealthCap,
-  bubble,
 } from "../../assets/sprites";
 import { CellState } from "../../common";
 import { HealthBar, Player, Nonogram, MiniGrid } from "../../sprites";
+import enemies from "../../sprites/enemies";
 import { Enemy } from "../../sprites/enemies/enemy";
-import { Karen } from "../../sprites/enemies/Karen";
 import { width, scale, height } from "./constants";
 import("../../sprites");
-import "../../sprites/enemies/Karen";
 
 /**
  * @class Battle
@@ -32,28 +30,24 @@ import "../../sprites/enemies/Karen";
  * @property {MiniGrid[]} minigrids an array of minigrids shown on the battle screen for completed puzzles to appear in.
  */
 class Battle extends Phaser.Scene {
-  public puzzleSet: PuzzleSet;
-  public puzzle: Puzzle;
-  public currentPuzzleSection: number;
-  public currentPuzzleIndex: number;
-  public completedPuzzles: number[];
+  public enemyClass: EnemyClass;
+  public puzzleSet!: PuzzleSet;
+  public puzzle!: Puzzle;
+  public currentPuzzleSection!: number;
+  public currentPuzzleIndex!: number;
+  public completedPuzzles!: number[];
   public keys?: BattleKeys;
   public emitter?: Phaser.GameObjects.Particles.ParticleEmitter;
   public healthbar!: HealthBar;
   public timerEvents?: Phaser.Time.TimerEvent[];
   public player!: Player;
   public nonogram!: Nonogram;
-  public minigrids: MiniGrid[];
+  public minigrids!: MiniGrid[];
   public enemy?: Enemy;
 
   constructor(config: Phaser.Types.Scenes.SettingsConfig, enemy: EnemyClass) {
     super(config);
-    this.puzzleSet = enemy.puzzleSet;
-    this.puzzle = this.puzzleSet[0];
-    this.currentPuzzleSection = 0;
-    this.currentPuzzleIndex = 0;
-    this.completedPuzzles = [];
-    this.minigrids = [];
+    this.enemyClass = enemy;
   }
 
   preload() {
@@ -76,6 +70,7 @@ class Battle extends Phaser.Scene {
   }
 
   async create() {
+    console.log(this.scene.manager.scenes);
     // Setup keyboard controls
     this.keys = this.input.keyboard.addKeys({
       up: Phaser.Input.Keyboard.KeyCodes.W,
@@ -97,6 +92,15 @@ class Battle extends Phaser.Scene {
       });
     }
 
+    this.enemy = (await this.add.enemy(this.enemyClass)).draw(175, 300);
+
+    this.puzzleSet = this.enemy.puzzleSet;
+    this.puzzle = this.puzzleSet[0];
+    this.currentPuzzleSection = 0;
+    this.currentPuzzleIndex = 0;
+    this.completedPuzzles = [];
+    this.minigrids = [];
+
     // Add minigrids
     this.minigrids = this.buildMiniGrids();
 
@@ -112,8 +116,6 @@ class Battle extends Phaser.Scene {
       32 * scale,
       this.player.health
     );
-
-    this.enemy = (await this.add.enemy(Karen)).draw(175, 300).attack();
   }
 
   handlePuzzleUpdate() {
@@ -138,24 +140,31 @@ class Battle extends Phaser.Scene {
         this.completedPuzzles.push(this.currentPuzzleIndex);
 
         if (this.completedPuzzles.length === this.puzzleSet.length) {
-          console.log("BATTLE OVER");
+          this.time.delayedCall(4000, () => {
+            this.scene.transition({
+              target: shuffle(
+                shuffle(enemies).filter((e) => e.name !== this.enemyClass.name)
+              )[0].name,
+              duration: 0,
+            });
+          });
+        } else {
+          const unfinishedPuzzlesIndexes = this.puzzleSet
+            .map((_p, i) => i)
+            .filter((_p, i) => !this.completedPuzzles.includes(i));
+
+          const randomPuzzleIndex =
+            unfinishedPuzzlesIndexes[
+              Math.floor(Math.random() * unfinishedPuzzlesIndexes.length)
+            ];
+
+          this.puzzle = this.puzzleSet[randomPuzzleIndex];
+          this.currentPuzzleIndex = randomPuzzleIndex;
+
+          this.time.delayedCall(1000, () => {
+            this.nonogram = this.add.nonogram(this.puzzle.puzzles[0]).draw();
+          });
         }
-
-        const unfinishedPuzzlesIndexes = this.puzzleSet
-          .map((_p, i) => i)
-          .filter((_p, i) => !this.completedPuzzles.includes(i));
-
-        const randomPuzzleIndex =
-          unfinishedPuzzlesIndexes[
-            Math.floor(Math.random() * unfinishedPuzzlesIndexes.length)
-          ];
-
-        this.puzzle = this.puzzleSet[randomPuzzleIndex];
-        this.currentPuzzleIndex = randomPuzzleIndex;
-
-        this.time.delayedCall(1000, () => {
-          this.nonogram = this.add.nonogram(this.puzzle.puzzles[0]).draw();
-        });
       } else {
         // Iterate to the next nonogram in the current puzzle.
         this.currentPuzzleSection += 1;

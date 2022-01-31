@@ -1,18 +1,18 @@
 import { Enemy } from "./enemy";
-import karen from "../../assets/sprites/enemies/karen.png";
+import dogwalker from "../../assets/sprites/enemies/dogwalker.png";
 import { puzzles } from "../../puzzles";
-import type Battle from "../../scenes/battle";
+import Battle from "../../scenes/battle";
 import { shuffle } from "lodash";
 
-const NAME = "Karen";
+const NAME = "DogWalker";
 
 const ASSETS = [
-  { url: karen, frameConfig: { frameWidth: 128, frameHeight: 182 } },
+  { url: dogwalker, frameConfig: { frameWidth: 128, frameHeight: 129 } },
 ];
 
-export class Karen extends Enemy {
+export class DogWalker extends Enemy {
   puzzleSet = shuffle(puzzles).slice(0, 1);
-  dialogue = ["foobar baz biz", "baz qix "];
+  dialogue = ["check out my dog", "baz qix "];
 
   constructor(scene: Phaser.Scene) {
     super(scene, ASSETS);
@@ -20,7 +20,7 @@ export class Karen extends Enemy {
 
   draw(...args: Parameters<Enemy["draw"]>) {
     super.draw(...args);
-    this.sprite.setScale(1.75);
+    this.sprite.setScale(2.5);
     return this;
   }
 
@@ -33,7 +33,6 @@ export class Karen extends Enemy {
         this.speak();
       },
     });
-
     return this;
   }
 }
