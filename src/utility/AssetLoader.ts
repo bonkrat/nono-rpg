@@ -20,15 +20,12 @@ export abstract class AssetLoader {
       );
     });
 
-    this.assets.forEach((asset, _, arr) => {
-      if (arr.length > 1 && !asset.key) {
-        throw new Error(
-          "ERROR: Duplicate key for different assets. Are you missing a key for this asset config?"
-        );
-      }
+    this.assets.forEach(async (asset) => {
+      const key = asset.key || this.key;
+
       this.scene.load.spritesheet({
         frameConfig: { frameWidth: 32 },
-        key: this.key,
+        key,
         ...asset,
       });
     });
@@ -37,14 +34,18 @@ export abstract class AssetLoader {
 
     await loaderPromise;
 
-    this.scene.anims.create({
-      key: this.key,
-      frames: this.scene.anims.generateFrameNumbers(this.key, {
-        frames: [0, 1, 2],
-      }),
-      frameRate: 3,
-      repeat: -1,
-    });
+    this.assets
+      .map((asset) => asset.key)
+      .forEach((key = this.key) => {
+        this.scene.anims.create({
+          key,
+          frames: this.scene.anims.generateFrameNumbers(key, {
+            frames: [0, 1, 2],
+          }),
+          frameRate: 3,
+          repeat: -1,
+        });
+      });
   }
 
   static register(factoryType: string, factoryFunction: Function) {

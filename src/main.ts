@@ -1,7 +1,6 @@
 import Phaser from "phaser";
-import { puzzles } from "./puzzles";
 import Battle from "./scenes/battle";
-import animals from "./puzzles/medium/animals";
+import { Karen } from "./sprites/enemies/Karen";
 
 const width = 800;
 const height = 600;
@@ -11,7 +10,7 @@ const config = {
   parent: "nono-rpg",
   width,
   height,
-  scene: new Battle({}, [animals[0], puzzles[0], puzzles[1]]),
+  scene: new Battle({}, Karen),
   pixelArt: true,
 };
 

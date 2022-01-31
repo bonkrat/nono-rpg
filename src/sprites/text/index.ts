@@ -74,15 +74,6 @@ Phaser.GameObjects.GameObjectFactory.register(
       });
     }
 
-    this.scene.anims.create({
-      key: "bubble",
-      frames: this.scene.anims.generateFrameNumbers("bubble", {
-        frames: [0, 1, 2],
-      }),
-      frameRate: 3,
-      repeat: -1,
-    });
-
     const words = text.split(" ").map((word: string) => word.split(""));
     const wordsContainer = this.scene.add.container(
       0,

@@ -1,22 +1,31 @@
 import { AssetLoader } from "../../../utility/AssetLoader";
 import bubble from "../../../assets/sprites/bubble.png";
 import { random } from "lodash";
-import { scale } from "../../../scenes/battle/constants";
+
+const BASE_ENEMY_ASSETS = [
+  {
+    url: bubble,
+    key: "bubble",
+    frameConfig: { frameWidth: 64, frameHeight: 64 },
+  },
+] as Partial<Phaser.Types.Loader.FileTypes.SpriteSheetFileConfig>[];
 
 export abstract class Enemy extends AssetLoader {
   public abstract dialogue: string[];
-  public abstract puzzleSet: PuzzleSet;
+  public static puzzleSet: PuzzleSet;
   protected scene: Phaser.Scene;
   protected speech!: Phaser.GameObjects.Container;
   protected sprite!: Phaser.GameObjects.Sprite;
   protected bubbleSprite!: Phaser.GameObjects.Sprite;
-  public assets = [
-    { url: bubble, key: "bubble" },
-  ] as Partial<Phaser.Types.Loader.FileTypes.SpriteSheetFileConfig>[];
+  protected assets: Partial<Phaser.Types.Loader.FileTypes.SpriteSheetFileConfig>[];
 
-  constructor(scene: Phaser.Scene) {
+  constructor(
+    scene: Phaser.Scene,
+    assets = [] as Partial<Phaser.Types.Loader.FileTypes.SpriteSheetFileConfig>[]
+  ) {
     super(scene);
     this.scene = scene;
+    this.assets = [...assets, ...BASE_ENEMY_ASSETS];
   }
 
   speak() {

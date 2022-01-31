@@ -46,13 +46,10 @@ class Battle extends Phaser.Scene {
   public minigrids: MiniGrid[];
   public enemy?: Enemy;
 
-  constructor(
-    config: Phaser.Types.Scenes.SettingsConfig,
-    puzzleSet: PuzzleSet
-  ) {
+  constructor(config: Phaser.Types.Scenes.SettingsConfig, enemy: EnemyClass) {
     super(config);
-    this.puzzleSet = puzzleSet;
-    this.puzzle = puzzleSet[0];
+    this.puzzleSet = enemy.puzzleSet;
+    this.puzzle = this.puzzleSet[0];
     this.currentPuzzleSection = 0;
     this.currentPuzzleIndex = 0;
     this.completedPuzzles = [];
@@ -70,7 +67,6 @@ class Battle extends Phaser.Scene {
       ["fullHealthCap", fullHealthCap],
       ["emptyHealthBar", emptyHealthBar],
       ["emptyHealthCap", emptyHealthCap],
-      ["bubble", bubble],
     ].forEach(([key, url]: string[]) => {
       this.load.spritesheet(key, url, {
         frameWidth: 32,

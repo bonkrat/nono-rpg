@@ -52,6 +52,7 @@ interface EnemyClass {
       typeof import("./sprites/enemies/enemy").Enemy
     >
   ): import("./sprites/enemies/enemy").Enemy;
+  puzzleSet: PuzzleSet;
 }
 
 declare namespace Phaser.GameObjects {

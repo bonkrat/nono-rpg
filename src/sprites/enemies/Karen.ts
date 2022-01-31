@@ -5,13 +5,16 @@ import type Battle from "../../scenes/battle";
 
 const NAME = "Karen";
 
+const KAREN_ASSETS = [
+  { url: karen, frameConfig: { frameWidth: 128, frameHeight: 182 } },
+];
+
 export class Karen extends Enemy {
+  static puzzleSet = [puzzles[0], puzzles[1]];
   dialogue = ["foobar baz biz", "baz qix "];
-  puzzleSet = [puzzles[0], puzzles[1]];
-  assets = [{ url: karen, frameConfig: { frameWidth: 128, frameHeight: 182 } }];
 
   constructor(scene: Phaser.Scene) {
-    super(scene);
+    super(scene, KAREN_ASSETS);
   }
 
   draw(...args: Parameters<Enemy["draw"]>) {
