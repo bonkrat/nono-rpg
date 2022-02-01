@@ -119,6 +119,9 @@ export class Nonogram {
     ) as Cell[][];
   }
 
+  /**
+   * Goes through each row and column and determines which are completed and greys out the cells that are not selected but in completed columns/rows.
+   */
   setCompletedRowsAndColumns() {
     if (!this.isPuzzleSolved()) {
       // Rows first

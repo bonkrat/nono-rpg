@@ -158,6 +158,12 @@ export class Player extends Phaser.GameObjects.Sprite {
 
         c.setAlpha(0.5);
 
+        c.play(
+          c.state === CellState.selected
+            ? c.getSelectedAnimation()
+            : c.getEmptyAnimation()
+        );
+
         scene.nonogram?.setCompletedRowsAndColumns();
 
         scene.tweens.add({
@@ -177,12 +183,6 @@ export class Player extends Phaser.GameObjects.Sprite {
             c.setCrop(0, 0, 32, 32);
           },
         });
-
-        c.play(
-          c.state === CellState.selected
-            ? c.getSelectedAnimation()
-            : c.getEmptyAnimation()
-        );
       });
 
       this.dragging = [];
