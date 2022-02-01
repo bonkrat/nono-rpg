@@ -139,13 +139,13 @@ export class Battle extends Phaser.Scene {
         this.completedPuzzles.push(this.currentPuzzleIndex);
 
         if (this.completedPuzzles.length === this.puzzleSet.length) {
+          this.player.setVisible(false);
+
           this.time.delayedCall(4000, () => {
             this.scene.restart({
-              enemyClass: shuffle(
-                shuffle(enemies).filter(
-                  (e) => e.name !== this.enemy.constructor.name
-                )
-              )[0],
+              enemyClass: shuffle(enemies).filter((e) => {
+                return e.name !== this.enemy.constructor.name;
+              })[0],
               duration: 0,
             });
           });

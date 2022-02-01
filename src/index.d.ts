@@ -54,6 +54,8 @@ interface EnemyClass {
   ): import("./sprites/enemies/enemy").Enemy;
   assets: Partial<Phaser.Types.Loader.FileTypes.SpriteSheetFileConfig>[];
   puzzleSet: PuzzleSet;
+  id: string;
+  displayName: string;
 }
 
 declare namespace Phaser.GameObjects {

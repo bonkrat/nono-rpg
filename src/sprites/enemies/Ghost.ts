@@ -9,6 +9,7 @@ export class Ghost extends Enemy {
   static assets = [
     { url: ghost, frameConfig: { frameWidth: 128, frameHeight: 128 } },
   ];
+  displayName = "Ghost";
   dialogue = ["ooooooo", "aaaaaa"];
 
   constructor(scene: Phaser.Scene) {

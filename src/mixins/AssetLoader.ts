@@ -12,7 +12,6 @@ export function LoadableAssets<TBase extends Loadable>(
     }
 
     async loadAssets() {
-      console.log("loading for " + Base.name);
       const loaderPromise = new Promise<void>((resolve, reject) => {
         this.scene.load.on(
           "complete",

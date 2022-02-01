@@ -9,6 +9,7 @@ export class DogWalker extends Enemy {
   static assets = [
     { url: dogwalker, frameConfig: { frameWidth: 128, frameHeight: 129 } },
   ];
+  displayName = "Dog Walker";
   dialogue = ["check out my dog", "baz qix "];
 
   constructor(scene: Phaser.Scene) {

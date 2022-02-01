@@ -14,6 +14,7 @@ const BASE_ENEMY_ASSETS = [
 
 export abstract class Enemy {
   public abstract dialogue: string[];
+  public abstract displayName: string;
   public key!: string;
   protected scene: Phaser.Scene;
   protected speech!: Phaser.GameObjects.Container;
@@ -125,6 +126,8 @@ register(
       throw new Error(
         "Expected static property assets of " +
           EnemyClass.name +
+          " for class " +
+          EnemyClass.name +
           " to be an array, but received: " +
           typeof EnemyClass.assets
       );
@@ -135,6 +138,8 @@ register(
       [...(EnemyClass.assets || []), ...BASE_ENEMY_ASSETS],
       EnemyClass.name
     );
+
+    Object.defineProperty(LoadableEnemy, "name", { value: EnemyClass.name });
 
     const enemy = new LoadableEnemy(this.scene);
 

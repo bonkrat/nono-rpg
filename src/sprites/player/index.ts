@@ -1,7 +1,7 @@
 import { shuffle } from "lodash";
 import { Cell } from "..";
 import { CellState } from "../../common";
-import Battle from "../../scenes/battle";
+import type { Battle } from "../../scenes/battle";
 import { scale } from "../../scenes/battle/constants";
 
 export class Player extends Phaser.GameObjects.Sprite {
@@ -172,7 +172,7 @@ export class Player extends Phaser.GameObjects.Sprite {
               scene.cameras.main.shake(100);
             }
           },
-          onComplete: (tween) => {
+          onComplete: (tween: Phaser.Tweens.Tween) => {
             this.scene.tweens.remove(tween);
             c.setCrop(0, 0, 32, 32);
           },
