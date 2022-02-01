@@ -3,7 +3,7 @@ import { chunk, isEqual, times } from "lodash";
 import Phaser from "phaser";
 import { Cell } from "..";
 import { CellState } from "../../common";
-import Battle from "../../scenes/battle";
+import { Battle } from "../../scenes/battle";
 import { height, scale, width } from "../../scenes/battle/constants";
 
 export class Nonogram {

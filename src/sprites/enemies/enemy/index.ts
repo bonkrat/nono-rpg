@@ -2,7 +2,7 @@ import bubble from "../../../assets/sprites/bubble.png";
 import { random } from "lodash";
 import { scale } from "../../../scenes/battle/constants";
 import { Battle } from "../../../scenes/battle";
-import { LoadableAssets, register } from "../../../utility/AssetLoader";
+import { LoadableAssets, register } from "../../../mixins/AssetLoader";
 
 const BASE_ENEMY_ASSETS = [
   {
@@ -14,7 +14,6 @@ const BASE_ENEMY_ASSETS = [
 
 export abstract class Enemy {
   public abstract dialogue: string[];
-  public abstract puzzleSet: PuzzleSet;
   public key!: string;
   protected scene: Phaser.Scene;
   protected speech!: Phaser.GameObjects.Container;

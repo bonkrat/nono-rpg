@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 import { Cell } from "..";
-import type Battle from "../../scenes/battle";
+import { Battle } from "../../scenes/battle";
 import { scale } from "../../scenes/battle/constants";
 
 export class MiniGrid extends Phaser.GameObjects.Container {

@@ -5,11 +5,11 @@ import type { Battle } from "../../scenes/battle";
 import { shuffle } from "lodash";
 
 export class Ghost extends Enemy {
-  puzzleSet = shuffle(puzzles).slice(0, 2);
-  dialogue = ["ooooooo", "aaaaaa"];
+  static puzzleSet = shuffle(puzzles).slice(0, 2);
   static assets = [
     { url: ghost, frameConfig: { frameWidth: 128, frameHeight: 128 } },
   ];
+  dialogue = ["ooooooo", "aaaaaa"];
 
   constructor(scene: Phaser.Scene) {
     super(scene);

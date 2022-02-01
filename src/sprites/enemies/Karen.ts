@@ -4,11 +4,11 @@ import { puzzles } from "../../puzzles";
 import { Enemy } from "./enemy";
 
 export class Karen extends Enemy {
-  puzzleSet = shuffle(puzzles).slice(0, 1);
-  dialogue = ["foobar baz biz", "baz qix "];
+  static puzzleSet = shuffle(puzzles).slice(0, 1);
   static assets = [
     { url: karen, frameConfig: { frameWidth: 128, frameHeight: 182 } },
   ];
+  dialogue = ["foobar baz biz", "baz qix "];
 
   constructor(scene: Phaser.Scene) {
     super(scene);

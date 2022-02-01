@@ -57,8 +57,8 @@ export class Battle extends Phaser.Scene {
       select: Phaser.Input.Keyboard.KeyCodes.SHIFT,
     }) as BattleKeys;
 
-    this.enemy = new enemyClass(this.scene.scene);
-    this.puzzleSet = this.enemy.puzzleSet;
+    // this.enemy = new enemyClass(this);
+    this.puzzleSet = enemyClass.puzzleSet;
     this.puzzle = this.puzzleSet[0];
     this.currentPuzzleSection = 0;
     this.currentPuzzleIndex = 0;
@@ -100,9 +100,11 @@ export class Battle extends Phaser.Scene {
       });
     }
 
-    this.minigrids = this.buildMiniGrids();
+    this.minigrids = await this.buildMiniGrids();
 
-    this.nonogram = this.add.nonogram(this.puzzleSet[0].puzzles[0]).draw();
+    this.nonogram = (
+      await this.add.nonogram(this.puzzleSet[0].puzzles[0])
+    ).draw();
 
     this.player = this.add.player(this.nonogram.x, this.nonogram.y);
 

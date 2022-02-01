@@ -53,6 +53,7 @@ interface EnemyClass {
     >
   ): import("./sprites/enemies/enemy").Enemy;
   assets: Partial<Phaser.Types.Loader.FileTypes.SpriteSheetFileConfig>[];
+  puzzleSet: PuzzleSet;
 }
 
 declare namespace Phaser.GameObjects {
@@ -74,6 +75,4 @@ declare namespace Phaser.GameObjects {
   }
 }
 
-type GConstructor<T = {}> = new (...args: [scene: Phaser.Scene]) => T;
-
-type Loadable = GConstructor<Enemy>;
+type Loadable = new (...args: any[]) => any;

@@ -5,11 +5,11 @@ import { shuffle } from "lodash";
 import { Battle } from "../../scenes/battle";
 
 export class DogWalker extends Enemy {
-  puzzleSet = shuffle(puzzles).slice(0, 1);
-  dialogue = ["check out my dog", "baz qix "];
+  static puzzleSet = shuffle(puzzles).slice(0, 1);
   static assets = [
     { url: dogwalker, frameConfig: { frameWidth: 128, frameHeight: 129 } },
   ];
+  dialogue = ["check out my dog", "baz qix "];
 
   constructor(scene: Phaser.Scene) {
     super(scene);

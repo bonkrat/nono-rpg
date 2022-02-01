@@ -1,19 +1,18 @@
 export function LoadableAssets<TBase extends Loadable>(
   Base: TBase,
   assets: Partial<Phaser.Types.Loader.FileTypes.SpriteSheetFileConfig>[],
-  key: string
+  key?: string
 ) {
   return class AssetLoading extends Base {
-    public key = key;
+    public key? = key;
     protected assets = assets;
-    scene: Phaser.Scene;
 
-    constructor(scene: Phaser.Scene) {
-      super(scene);
-      this.scene = scene;
+    constructor(...args: any[]) {
+      super(...args);
     }
 
     async loadAssets() {
+      console.log("loading for " + Base.name);
       const loaderPromise = new Promise<void>((resolve, reject) => {
         this.scene.load.on(
           "complete",
@@ -33,11 +32,15 @@ export function LoadableAssets<TBase extends Loadable>(
       this.assets.forEach(async (asset) => {
         const key = asset.key || this.key;
 
-        this.scene.load.spritesheet({
-          frameConfig: { frameWidth: 32 },
-          key,
-          ...asset,
-        });
+        if (key) {
+          this.scene.load.spritesheet({
+            frameConfig: { frameWidth: 32 },
+            key,
+            ...asset,
+          });
+        } else {
+          throw new Error("Missing key when loading assets for " + Base.name);
+        }
       });
 
       this.scene.load.start();
@@ -47,6 +50,12 @@ export function LoadableAssets<TBase extends Loadable>(
       this.assets
         .map((asset) => asset.key)
         .forEach((key = this.key) => {
+          if (!key) {
+            throw new Error(
+              "Missing key when loading animations for " + Base.name
+            );
+          }
+
           this.scene.anims.create({
             key,
             frames: this.scene.anims.generateFrameNumbers(key, {
@@ -55,6 +64,14 @@ export function LoadableAssets<TBase extends Loadable>(
             frameRate: 3,
             repeat: -1,
           });
+          // } else {
+          //   console.warn(
+          //     "Tried loading another animation for key " +
+          //       key +
+          //       " for asset " +
+          //       Base.name
+          //   );
+          // }
         });
     }
   };
