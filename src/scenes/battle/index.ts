@@ -92,7 +92,7 @@ class Battle extends Phaser.Scene {
       });
     }
 
-    this.enemy = (await this.add.enemy(this.enemyClass)).draw(175, 300);
+    this.enemy = (await this.add.enemy(this.enemyClass)).draw();
 
     this.puzzleSet = this.enemy.puzzleSet;
     this.puzzle = this.puzzleSet[0];
@@ -116,6 +116,8 @@ class Battle extends Phaser.Scene {
       32 * scale,
       this.player.health
     );
+
+    this.enemy.attack();
   }
 
   handlePuzzleUpdate() {

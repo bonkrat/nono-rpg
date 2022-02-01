@@ -1,6 +1,8 @@
 import { AssetLoader } from "../../../utility/AssetLoader";
 import bubble from "../../../assets/sprites/bubble.png";
 import { random } from "lodash";
+import Battle from "../../../scenes/battle";
+import { scale } from "../../../scenes/battle/constants";
 
 const BASE_ENEMY_ASSETS = [
   {
@@ -31,11 +33,14 @@ export abstract class Enemy extends AssetLoader {
   speak() {
     this.speech?.destroy();
     const enemyBounds = this.sprite.getBounds();
+
+    const randomY = [enemyBounds.top, enemyBounds.bottom][random(1)];
+
     this.speech = this.scene.add
       .textsprite(
-        this.dialogue[Math.floor(Math.random() * this.dialogue.length)],
+        this.dialogue[random(this.dialogue.length - 1)],
         random(enemyBounds.left, enemyBounds.right),
-        enemyBounds.bottom * 0.75,
+        randomY,
         0.5
       )
       .setVisible(false);
@@ -72,18 +77,32 @@ export abstract class Enemy extends AssetLoader {
     return this;
   }
 
-  draw(x: number, y: number, frame = this.key) {
+  attack() {
+    this.scene.time.addEvent({
+      delay: Phaser.Math.Between(2000, 3000),
+      loop: true,
+      callback: () => {
+        (this.scene as Battle).player.removeHealth(1);
+        this.speak();
+      },
+    });
+
+    return this;
+  }
+
+  draw(x?: number, y?: number, frame = this.key) {
     const xPos = x || 0;
     const yPos = y || 0;
-    this.sprite = this.scene.add.sprite(xPos, yPos, this.name).play(frame);
+    this.sprite = this.scene.add.sprite(xPos, yPos, this.name);
+    this.sprite
+      .setPosition(this.sprite.displayWidth + 32 * scale, 300)
+      .play(frame);
     return this;
   }
 
   play(anim: string) {
     return this.sprite.play(anim);
   }
-
-  abstract attack(): Enemy;
 
   get x() {
     return this.sprite.x;
