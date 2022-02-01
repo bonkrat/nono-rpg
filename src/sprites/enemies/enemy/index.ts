@@ -1,8 +1,8 @@
-import { AssetLoader } from "../../../utility/AssetLoader";
 import bubble from "../../../assets/sprites/bubble.png";
 import { random } from "lodash";
 import { scale } from "../../../scenes/battle/constants";
 import { Battle } from "../../../scenes/battle";
+import { LoadableAssets, register } from "../../../utility/AssetLoader";
 
 const BASE_ENEMY_ASSETS = [
   {
@@ -12,22 +12,17 @@ const BASE_ENEMY_ASSETS = [
   },
 ] as Partial<Phaser.Types.Loader.FileTypes.SpriteSheetFileConfig>[];
 
-export abstract class Enemy extends AssetLoader {
+export abstract class Enemy {
   public abstract dialogue: string[];
   public abstract puzzleSet: PuzzleSet;
+  public key!: string;
   protected scene: Phaser.Scene;
   protected speech!: Phaser.GameObjects.Container;
   protected sprite!: Phaser.GameObjects.Sprite;
   protected bubbleSprite!: Phaser.GameObjects.Sprite;
-  protected assets: Partial<Phaser.Types.Loader.FileTypes.SpriteSheetFileConfig>[];
 
-  constructor(
-    scene: Phaser.Scene,
-    assets = [] as Partial<Phaser.Types.Loader.FileTypes.SpriteSheetFileConfig>[]
-  ) {
-    super(scene);
+  constructor(scene: Phaser.Scene) {
     this.scene = scene;
-    this.assets = [...assets, ...BASE_ENEMY_ASSETS];
   }
 
   speak() {
@@ -93,7 +88,7 @@ export abstract class Enemy extends AssetLoader {
   draw(x?: number, y?: number, frame = this.key) {
     const xPos = x || 0;
     const yPos = y || 0;
-    this.sprite = this.scene.add.sprite(xPos, yPos, this.name);
+    this.sprite = this.scene.add.sprite(xPos, yPos, this.key);
     this.sprite
       .setPosition(this.sprite.displayWidth + 32 * scale, 300)
       .play(frame);
@@ -119,27 +114,31 @@ export abstract class Enemy extends AssetLoader {
   set y(newY: number) {
     this.sprite.setY(newY);
   }
-
-  get name() {
-    return this.key;
-  }
-
-  set name(name: string) {
-    this.key = name;
-  }
-
-  static register() {
-    AssetLoader.register(
-      "enemy",
-      function (
-        this: Phaser.GameObjects.GameObjectFactory,
-        EnemyClass: EnemyClass
-      ): Enemy {
-        const enemy = new EnemyClass(this.scene);
-        enemy.name = EnemyClass.name;
-
-        return enemy;
-      }
-    );
-  }
 }
+
+register(
+  "enemy",
+  function (
+    this: Phaser.GameObjects.GameObjectFactory,
+    EnemyClass: EnemyClass
+  ) {
+    if (EnemyClass.assets && !Array.isArray(EnemyClass.assets)) {
+      throw new Error(
+        "Expected static property assets of " +
+          EnemyClass.name +
+          " to be an array, but received: " +
+          typeof EnemyClass.assets
+      );
+    }
+
+    const LoadableEnemy = LoadableAssets(
+      EnemyClass,
+      [...(EnemyClass.assets || []), ...BASE_ENEMY_ASSETS],
+      EnemyClass.name
+    );
+
+    const enemy = new LoadableEnemy(this.scene);
+
+    return enemy;
+  }
+);

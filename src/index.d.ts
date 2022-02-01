@@ -52,6 +52,7 @@ interface EnemyClass {
       typeof import("./sprites/enemies/enemy").Enemy
     >
   ): import("./sprites/enemies/enemy").Enemy;
+  assets: Partial<Phaser.Types.Loader.FileTypes.SpriteSheetFileConfig>[];
 }
 
 declare namespace Phaser.GameObjects {
@@ -69,8 +70,10 @@ declare namespace Phaser.GameObjects {
       y: number,
       scale: number
     ): Phaser.GameObjects.Container;
-    enemy(
-      EnemyClass: EnemyClass
-    ): Promise<import("./sprites/enemies/enemy").Enemy>;
+    enemy(EnemyClass: EnemyClass): Promise<Enemy>;
   }
 }
+
+type GConstructor<T = {}> = new (...args: [scene: Phaser.Scene]) => T;
+
+type Loadable = GConstructor<Enemy>;

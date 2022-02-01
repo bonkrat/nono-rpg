@@ -45,10 +45,10 @@ export class Battle extends Phaser.Scene {
   public enemy!: Enemy;
 
   constructor() {
-    super({ key: "Battle", loader: { async: true } });
+    super({ key: "Battle" });
   }
 
-  async init({ enemyClass }: { enemyClass: EnemyClass }) {
+  init({ enemyClass }: { enemyClass: EnemyClass }) {
     this.keys = this.input.keyboard.addKeys({
       up: Phaser.Input.Keyboard.KeyCodes.W,
       down: Phaser.Input.Keyboard.KeyCodes.S,
@@ -143,7 +143,7 @@ export class Battle extends Phaser.Scene {
                 shuffle(enemies).filter(
                   (e) => e.name !== this.enemy.constructor.name
                 )
-              )[0].name,
+              )[0],
               duration: 0,
             });
           });

@@ -4,16 +4,15 @@ import { puzzles } from "../../puzzles";
 import type { Battle } from "../../scenes/battle";
 import { shuffle } from "lodash";
 
-const ASSETS = [
-  { url: ghost, frameConfig: { frameWidth: 128, frameHeight: 128 } },
-];
-
 export class Ghost extends Enemy {
   puzzleSet = shuffle(puzzles).slice(0, 2);
   dialogue = ["ooooooo", "aaaaaa"];
+  static assets = [
+    { url: ghost, frameConfig: { frameWidth: 128, frameHeight: 128 } },
+  ];
 
   constructor(scene: Phaser.Scene) {
-    super(scene, ASSETS);
+    super(scene);
   }
 
   draw(...args: Parameters<Enemy["draw"]>) {
@@ -35,5 +34,3 @@ export class Ghost extends Enemy {
     return this;
   }
 }
-
-Enemy.register();

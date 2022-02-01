@@ -4,16 +4,15 @@ import { puzzles } from "../../puzzles";
 import { shuffle } from "lodash";
 import { Battle } from "../../scenes/battle";
 
-const ASSETS = [
-  { url: dogwalker, frameConfig: { frameWidth: 128, frameHeight: 129 } },
-];
-
 export class DogWalker extends Enemy {
   puzzleSet = shuffle(puzzles).slice(0, 1);
   dialogue = ["check out my dog", "baz qix "];
+  static assets = [
+    { url: dogwalker, frameConfig: { frameWidth: 128, frameHeight: 129 } },
+  ];
 
   constructor(scene: Phaser.Scene) {
-    super(scene, ASSETS);
+    super(scene);
   }
 
   draw(...args: Parameters<Enemy["draw"]>) {
@@ -34,5 +33,3 @@ export class DogWalker extends Enemy {
     return this;
   }
 }
-
-Enemy.register();
