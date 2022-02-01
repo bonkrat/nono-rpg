@@ -29,8 +29,7 @@ import("../../sprites");
  * @property {NonoGram} nonogram a container for the current nonogram being played
  * @property {MiniGrid[]} minigrids an array of minigrids shown on the battle screen for completed puzzles to appear in.
  */
-class Battle extends Phaser.Scene {
-  public enemyClass: EnemyClass;
+export class Battle extends Phaser.Scene {
   public puzzleSet!: PuzzleSet;
   public puzzle!: Puzzle;
   public currentPuzzleSection!: number;
@@ -43,11 +42,28 @@ class Battle extends Phaser.Scene {
   public player!: Player;
   public nonogram!: Nonogram;
   public minigrids!: MiniGrid[];
-  public enemy?: Enemy;
+  public enemy!: Enemy;
 
-  constructor(config: Phaser.Types.Scenes.SettingsConfig, enemy: EnemyClass) {
-    super(config);
-    this.enemyClass = enemy;
+  constructor() {
+    super({ key: "Battle", loader: { async: true } });
+  }
+
+  async init({ enemyClass }: { enemyClass: EnemyClass }) {
+    this.keys = this.input.keyboard.addKeys({
+      up: Phaser.Input.Keyboard.KeyCodes.W,
+      down: Phaser.Input.Keyboard.KeyCodes.S,
+      left: Phaser.Input.Keyboard.KeyCodes.A,
+      right: Phaser.Input.Keyboard.KeyCodes.D,
+      select: Phaser.Input.Keyboard.KeyCodes.SHIFT,
+    }) as BattleKeys;
+
+    this.enemy = new enemyClass(this.scene.scene);
+    this.puzzleSet = this.enemy.puzzleSet;
+    this.puzzle = this.puzzleSet[0];
+    this.currentPuzzleSection = 0;
+    this.currentPuzzleIndex = 0;
+    this.completedPuzzles = [];
+    this.minigrids = [];
   }
 
   preload() {
@@ -69,16 +85,8 @@ class Battle extends Phaser.Scene {
     });
   }
 
-  async create() {
-    console.log(this.scene.manager.scenes);
-    // Setup keyboard controls
-    this.keys = this.input.keyboard.addKeys({
-      up: Phaser.Input.Keyboard.KeyCodes.W,
-      down: Phaser.Input.Keyboard.KeyCodes.S,
-      left: Phaser.Input.Keyboard.KeyCodes.A,
-      right: Phaser.Input.Keyboard.KeyCodes.D,
-      select: Phaser.Input.Keyboard.KeyCodes.SHIFT,
-    }) as BattleKeys;
+  async create({ enemyClass }: { enemyClass: EnemyClass }) {
+    this.enemy = (await this.add.enemy(enemyClass)).draw();
 
     // Create number animations
     for (var i = 0; i < 10; i++) {
@@ -92,25 +100,12 @@ class Battle extends Phaser.Scene {
       });
     }
 
-    this.enemy = (await this.add.enemy(this.enemyClass)).draw();
-
-    this.puzzleSet = this.enemy.puzzleSet;
-    this.puzzle = this.puzzleSet[0];
-    this.currentPuzzleSection = 0;
-    this.currentPuzzleIndex = 0;
-    this.completedPuzzles = [];
-    this.minigrids = [];
-
-    // Add minigrids
     this.minigrids = this.buildMiniGrids();
 
-    // Initialize and render nonogram
     this.nonogram = this.add.nonogram(this.puzzleSet[0].puzzles[0]).draw();
 
-    // Add Player
     this.player = this.add.player(this.nonogram.x, this.nonogram.y);
 
-    // HealthBar
     this.healthbar = this.add.healthbar(
       width - 32 * scale * this.player.health - 10 * this.player.health,
       32 * scale,
@@ -143,9 +138,11 @@ class Battle extends Phaser.Scene {
 
         if (this.completedPuzzles.length === this.puzzleSet.length) {
           this.time.delayedCall(4000, () => {
-            this.scene.transition({
-              target: shuffle(
-                shuffle(enemies).filter((e) => e.name !== this.enemyClass.name)
+            this.scene.restart({
+              enemyClass: shuffle(
+                shuffle(enemies).filter(
+                  (e) => e.name !== this.enemy.constructor.name
+                )
               )[0].name,
               duration: 0,
             });
@@ -334,5 +331,3 @@ class Battle extends Phaser.Scene {
     }
   }
 }
-
-export default Battle;

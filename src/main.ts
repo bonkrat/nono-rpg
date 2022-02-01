@@ -1,6 +1,6 @@
 import Phaser from "phaser";
-import Battle from "./scenes/battle";
-import Enemies from "./sprites/enemies/index";
+import { Battle } from "./scenes/battle";
+import { Start } from "./scenes/start";
 
 const width = 800;
 const height = 600;
@@ -10,9 +10,7 @@ const config = {
   parent: "nono-rpg",
   width,
   height,
-  scene: Enemies.map(
-    (clazz: EnemyClass) => new Battle({ key: clazz.name }, clazz)
-  ).reverse(),
+  scene: [Start, Battle],
   pixelArt: true,
 };
 

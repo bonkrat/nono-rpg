@@ -1,8 +1,8 @@
 import { Enemy } from "./enemy";
 import dogwalker from "../../assets/sprites/enemies/dogwalker.png";
 import { puzzles } from "../../puzzles";
-import Battle from "../../scenes/battle";
 import { shuffle } from "lodash";
+import { Battle } from "../../scenes/battle";
 
 const ASSETS = [
   { url: dogwalker, frameConfig: { frameWidth: 128, frameHeight: 129 } },

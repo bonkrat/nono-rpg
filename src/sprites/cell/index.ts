@@ -1,7 +1,7 @@
 import { shuffle } from "lodash";
 import Phaser from "phaser";
 import { CellState } from "../../common";
-import type Battle from "../../scenes/battle";
+import { Battle } from "../../scenes/battle";
 import { scale } from "../../scenes/battle/constants";
 
 export class Cell extends Phaser.GameObjects.Sprite {

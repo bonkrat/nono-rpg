@@ -1,8 +1,8 @@
 import { AssetLoader } from "../../../utility/AssetLoader";
 import bubble from "../../../assets/sprites/bubble.png";
 import { random } from "lodash";
-import Battle from "../../../scenes/battle";
 import { scale } from "../../../scenes/battle/constants";
+import { Battle } from "../../../scenes/battle";
 
 const BASE_ENEMY_ASSETS = [
   {

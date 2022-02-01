@@ -1,7 +1,7 @@
 import { Enemy } from "./enemy";
 import ghost from "../../assets/sprites/enemies/ghost.png";
 import { puzzles } from "../../puzzles";
-import type Battle from "../../scenes/battle";
+import type { Battle } from "../../scenes/battle";
 import { shuffle } from "lodash";
 
 const ASSETS = [
