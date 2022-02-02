@@ -121,6 +121,9 @@ export class Battle extends Phaser.Scene {
       // this.keys?.select.removeAllListeners();
       this.nonogram?.rowClues?.map((r) => r.map((c) => c.setVisible(false)));
       this.nonogram?.colClues?.map((r) => r.map((c) => c.setVisible(false)));
+      this.nonogram
+        .getAll()
+        .map((c) => c.state !== CellState.selected && c.destroy());
       const solvedContainer = this.nonogram.container;
 
       let currentMinigrid;
@@ -265,7 +268,6 @@ export class Battle extends Phaser.Scene {
                     );
                   }
 
-                  this.emitter?.explode(32, nonogram.x, nonogram.y);
                   this.cameras.main.shake(200);
                 },
                 [
