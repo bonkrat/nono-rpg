@@ -68,7 +68,6 @@ export class Cell extends Phaser.GameObjects.Sprite {
     this.setAlpha(1);
     this.setScale(scale);
     this.play(this.getEmptyAnimation());
-    console.log("setting empty styles");
   }
 
   setCellHoverStyles() {

@@ -193,7 +193,7 @@ export class Nonogram {
 
   buildClues() {
     const rowClues = this.nonogramData.rowClues.map((clues, i) => {
-      return clues.reverse().map((clue, j) => {
+      return [...clues].reverse().map((clue, j) => {
         const firstRowCell = this.getRows()[i][0];
         const clueSprite = this.scene.add.sprite(
           firstRowCell.getCenter().x - 32 * scale * (j + 1),
@@ -210,7 +210,7 @@ export class Nonogram {
     });
 
     const colClues = this.nonogramData.colClues.map((clues, i) => {
-      return clues.reverse().map((clue, j) => {
+      return [...clues].reverse().map((clue, j) => {
         const firstColCell = this.getColumns()[i][0];
         const clueSprite = this.scene.add.sprite(
           firstColCell.getCenter().x,

@@ -31,7 +31,7 @@ export class HealthBar extends Phaser.GameObjects.Container {
   setHealth(healthAmount: number) {
     const healthBar = this.getAll() as Phaser.GameObjects.Sprite[];
 
-    healthBar.reverse().forEach((c, i, arr) => {
+    [...healthBar].reverse().forEach((c, i, arr) => {
       if (i === arr.length - 1) {
         if (healthAmount < this.maxHealth) {
           c.play("emptyHealthCap");

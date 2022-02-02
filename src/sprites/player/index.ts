@@ -65,9 +65,9 @@ export class Player extends Phaser.GameObjects.Sprite {
 
       this.health -= val;
 
-      const healthChunk = (this.scene as Battle).healthbar.getAll().reverse()[
-        this.health
-      ];
+      const healthChunk = [
+        ...(this.scene as Battle).healthbar.getAll(),
+      ].reverse()[this.health];
 
       this.scene.add.tween({
         targets: healthChunk,
