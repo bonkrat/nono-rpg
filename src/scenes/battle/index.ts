@@ -100,11 +100,9 @@ export class Battle extends Phaser.Scene {
       });
     }
 
-    this.minigrids = await this.buildMiniGrids();
+    this.minigrids = this.buildMiniGrids();
 
-    this.nonogram = (
-      await this.add.nonogram(this.puzzleSet[0].puzzles[0])
-    ).draw();
+    this.nonogram = this.add.nonogram(this.puzzleSet[0].puzzles[0]).draw();
 
     this.player = this.add.player(this.nonogram.x, this.nonogram.y);
 

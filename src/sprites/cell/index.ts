@@ -41,11 +41,18 @@ export class Cell extends Phaser.GameObjects.Sprite {
     );
   }
 
-  setCellStyle() {
-    this.state === CellState.selected
-      ? this.setCellSelectedStyles()
-      : this.setCellEmptyStyles();
-    return this;
+  setStyle() {
+    if (this.state === CellState.disabled) {
+      this.setCellDisabledStyles();
+    }
+
+    if (this.state === CellState.empty) {
+      this.setCellEmptyStyles();
+    }
+
+    if (this.state === CellState.selected) {
+      this.setCellSelectedStyles();
+    }
   }
 
   setCellSelectedStyles() {
@@ -61,6 +68,7 @@ export class Cell extends Phaser.GameObjects.Sprite {
     this.setAlpha(1);
     this.setScale(scale);
     this.play(this.getEmptyAnimation());
+    console.log("setting empty styles");
   }
 
   setCellHoverStyles() {
@@ -70,9 +78,10 @@ export class Cell extends Phaser.GameObjects.Sprite {
   }
 
   setCellDisabledStyles() {
-    this.play(this.getEmptyAnimation()).setAlpha(0.3);
+    this.setState(CellState.disabled);
     this.setCrop(1, 1, 30, 30);
     this.setScale(scale * 0.8);
+    this.play(this.getEmptyAnimation()).setAlpha(0.3);
   }
 
   playEmptyAnimation() {

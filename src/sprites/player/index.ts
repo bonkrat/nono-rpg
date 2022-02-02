@@ -151,23 +151,15 @@ export class Player extends Phaser.GameObjects.Sprite {
         } else {
           c.setState(
             c.state === CellState.selected
-              ? CellState.disabled
+              ? CellState.empty
               : CellState.selected
           );
         }
 
         c.setAlpha(0.5);
 
-        c.play(
-          c.state === CellState.selected
-            ? c.getSelectedAnimation()
-            : c.getEmptyAnimation()
-        );
-
-        scene.nonogram?.setCompletedRowsAndColumns();
-
-        scene.tweens.add({
-          targets: c,
+        (this.scene as Battle).tweens.add({
+          targets: c.state === CellState.empty ? [] : c,
           alpha: 1,
           ease: "Stepped",
           delay: 500 / (i + 1),
@@ -180,15 +172,17 @@ export class Player extends Phaser.GameObjects.Sprite {
           },
           onComplete: (tween: Phaser.Tweens.Tween) => {
             this.scene.tweens.remove(tween);
-            c.setCrop(0, 0, 32, 32);
+            c.setStyle();
           },
         });
       });
 
+      (this.scene as Battle).nonogram?.setCompletedRowsAndColumns();
+
       this.dragging = [];
 
       // Check for solved puzzle and build next if it is solved
-      scene.handlePuzzleUpdate();
+      (this.scene as Battle).handlePuzzleUpdate();
     });
   }
 

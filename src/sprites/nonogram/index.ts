@@ -144,14 +144,12 @@ export class Nonogram {
         if (isEqual(r, rowClues[i])) {
           rows[i].forEach((c) => {
             if (c.state !== CellState.selected) {
-              c.setState(CellState.disabled);
               c.setCellDisabledStyles();
             }
           });
         } else {
           rows[i].forEach((c) => {
             if (c.state !== CellState.selected) {
-              c.setState(CellState.disabled);
               c.setCellEmptyStyles();
             }
           });
@@ -175,7 +173,6 @@ export class Nonogram {
         if (isEqual(r, colClues[i].reverse())) {
           cols[i].forEach((c) => {
             if (c.state !== CellState.selected) {
-              c.setState(CellState.disabled);
               c.setCellDisabledStyles();
             }
           });

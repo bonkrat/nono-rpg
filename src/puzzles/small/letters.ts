@@ -120,7 +120,7 @@ export default [
     ],
   },
   {
-    name: "F",
+    name: "R",
     puzzles: [
       {
         rowClues: [[4], [1, 1], [3], [1, 2], [1, 1]],
