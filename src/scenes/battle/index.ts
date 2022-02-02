@@ -123,7 +123,7 @@ export class Battle extends Phaser.Scene {
       this.nonogram?.colClues?.map((r) => r.map((c) => c.setVisible(false)));
       this.nonogram
         .getAll()
-        .map((c) => c.state !== CellState.selected && c.destroy());
+        .map((c) => c.state !== CellState.selected && c.setVisible(false));
       const solvedContainer = this.nonogram.container;
 
       let currentMinigrid;
@@ -137,51 +137,34 @@ export class Battle extends Phaser.Scene {
 
       // All nonograms complete, reset to a new set puzzle in the set.
       if (currentPuzzSection === currentPuzz.puzzles.length - 1) {
-        this.currentPuzzleSection = 0;
-        this.completedPuzzles.push(this.currentPuzzleIndex);
-
-        if (this.completedPuzzles.length === this.puzzleSet.length) {
-          this.player.setVisible(false);
-
-          this.time.delayedCall(4000, () => {
-            this.scene.restart({
-              enemyClass: shuffle(enemies).filter((e) => {
-                return e.name !== this.enemy.constructor.name;
-              })[0],
-              duration: 0,
-            });
-          });
-        } else {
-          const unfinishedPuzzlesIndexes = this.puzzleSet
-            .map((_p, i) => i)
-            .filter((_p, i) => !this.completedPuzzles.includes(i));
-
-          const randomPuzzleIndex =
-            unfinishedPuzzlesIndexes[
-              Math.floor(Math.random() * unfinishedPuzzlesIndexes.length)
-            ];
-
-          this.puzzle = this.puzzleSet[randomPuzzleIndex];
-          this.currentPuzzleIndex = randomPuzzleIndex;
-
-          this.time.delayedCall(1000, () => {
-            this.nonogram = this.add.nonogram(this.puzzle.puzzles[0]).draw();
-          });
-        }
+        this.resetToNextPuzzleInSet();
       } else {
         // Iterate to the next nonogram in the current puzzle.
         this.currentPuzzleSection += 1;
 
-        this.time.delayedCall(
-          1000,
-          () => {
-            this.nonogram = this.add
-              .nonogram(this.puzzle.puzzles[this.currentPuzzleSection])
-              .draw();
-          },
-          [],
-          this
-        );
+        // Find the next non-zero nonogram
+        while (
+          this.currentPuzzleSection !== currentPuzz.puzzles.length &&
+          this.nonogramIsEmpty(currentPuzz.puzzles[this.currentPuzzleSection])
+        ) {
+          this.currentPuzzleSection += 1;
+        }
+
+        // We've reached the end of the puzzles
+        if (this.currentPuzzleSection === currentPuzz.puzzles.length) {
+          this.resetToNextPuzzleInSet();
+        } else {
+          this.time.delayedCall(
+            1000,
+            () => {
+              this.nonogram = this.add
+                .nonogram(this.puzzle.puzzles[this.currentPuzzleSection])
+                .draw();
+            },
+            [],
+            this
+          );
+        }
       }
 
       this.time.delayedCall(
@@ -304,6 +287,47 @@ export class Battle extends Phaser.Scene {
 
       return minigrid;
     });
+  }
+
+  private resetToNextPuzzleInSet() {
+    this.currentPuzzleSection = 0;
+    this.completedPuzzles.push(this.currentPuzzleIndex);
+
+    if (this.completedPuzzles.length === this.puzzleSet.length) {
+      this.player.setVisible(false);
+
+      this.time.delayedCall(4000, () => {
+        this.scene.restart({
+          enemyClass: shuffle(enemies).filter((e) => {
+            return e.name !== this.enemy.constructor.name;
+          })[0],
+          duration: 0,
+        });
+      });
+    } else {
+      const unfinishedPuzzlesIndexes = this.puzzleSet
+        .map((_p, i) => i)
+        .filter((_p, i) => !this.completedPuzzles.includes(i));
+
+      const randomPuzzleIndex =
+        unfinishedPuzzlesIndexes[
+          Math.floor(Math.random() * unfinishedPuzzlesIndexes.length)
+        ];
+
+      this.puzzle = this.puzzleSet[randomPuzzleIndex];
+      this.currentPuzzleIndex = randomPuzzleIndex;
+
+      this.time.delayedCall(1000, () => {
+        this.nonogram = this.add.nonogram(this.puzzle.puzzles[0]).draw();
+      });
+    }
+  }
+
+  private nonogramIsEmpty(nonogram: NonogramData) {
+    return (
+      nonogram.resultSha ===
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    );
   }
 
   update() {

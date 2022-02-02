@@ -66,7 +66,7 @@ export class Nonogram {
       cell.playEmptyAnimation();
     });
 
-    this.nonogramData.hint?.cells.forEach((c, i) => {
+    this.nonogramData.hint?.cells?.forEach((c, i) => {
       const cell =
         this.nonogramData.hint.direction === "col"
           ? this.getCell({

@@ -4,7 +4,7 @@ import { puzzles } from "../../puzzles";
 import { Enemy } from "./enemy";
 
 export class Ghost extends Enemy {
-  static puzzleSet = shuffle(puzzles).slice(0, 2);
+  static puzzleSet = shuffle(puzzles).slice(0, 3);
   static assets = [
     { url: ghost, frameConfig: { frameWidth: 128, frameHeight: 128 } },
   ];

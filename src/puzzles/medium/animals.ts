@@ -208,7 +208,7 @@ export default [
         hint: {
           direction: "row",
           index: 0,
-          selectedCells: [
+          cells: [
             { selected: true, color: "black" },
             { color: "black", selected: true },
             { selected: false, color: "black" },
@@ -227,7 +227,7 @@ export default [
         hint: {
           direction: "row",
           index: 4,
-          selectedCells: [
+          cells: [
             { color: "black", selected: true },
             { color: "black", selected: true },
             { color: "black", selected: true },
@@ -289,7 +289,7 @@ export default [
         hint: {
           direction: "row",
           index: 2,
-          selectedCells: [
+          cells: [
             { selected: false, color: "black" },
             { selected: false, color: "black" },
             { color: "black", selected: true },
@@ -308,7 +308,7 @@ export default [
         hint: {
           direction: "row",
           index: 1,
-          selectedCells: [
+          cells: [
             { selected: false, color: "black" },
             { color: "black", selected: true },
             { color: "black", selected: true },
@@ -318,6 +318,168 @@ export default [
         },
         resultSha:
           "502c3daa528ee7d6605c47cb61a71aa21727de3743778c74d175cc5120b68c50",
+        height: 5,
+        width: 5,
+      },
+    ],
+  },
+  {
+    name: "cat",
+    puzzles: [
+      {
+        rowClues: [[0], [0], [0], [1], [1]],
+        colClues: [[0], [0], [0], [0], [2]],
+        hint: {},
+        resultSha:
+          "2a0400a50c04a5c64e7818f4920059acbedcc2a193e715b0f0310923405b36e8",
+        height: 5,
+        width: 5,
+      },
+      {
+        rowClues: [[0], [0], [2, 2], [2, 2], [5]],
+        colClues: [[3], [3], [1], [3], [3]],
+        hint: {
+          direction: "row",
+          index: 4,
+          cells: [
+            { selected: true, color: "black" },
+            { color: "black", selected: true },
+            { color: "black", selected: true },
+            { color: "black", selected: true },
+            { color: "black", selected: true },
+          ],
+        },
+        resultSha:
+          "5b92281f7d657f7d50beafec58c98f83040628667f2bdc2a4c3ff044a32a5344",
+        height: 5,
+        width: 5,
+      },
+      {
+        rowClues: [[0], [0], [0], [1], [1]],
+        colClues: [[2], [0], [0], [0], [0]],
+        hint: {},
+        resultSha:
+          "4ee813262a515c9aace96ef879e65667855c4ec290ca31f5bd49eb69a5e05ae7",
+        height: 5,
+        width: 5,
+      },
+      {
+        rowClues: [[2], [2], [2], [2], [3]],
+        colClues: [[0], [0], [1], [5], [5]],
+        hint: {
+          direction: "col",
+          index: 3,
+          cells: [
+            { color: "black", selected: true },
+            { color: "black", selected: true },
+            { color: "black", selected: true },
+            { color: "black", selected: true },
+            { color: "black", selected: true },
+          ],
+        },
+        resultSha:
+          "6a4339231fcf633044db5dca467a02c938af6db687a686f7393a0129d07c49a0",
+        height: 5,
+        width: 5,
+      },
+      {
+        rowClues: [[5], [3], [2, 2], [1, 1, 1], [5]],
+        colClues: [
+          [1, 3],
+          [3, 1],
+          [2, 2],
+          [3, 1],
+          [1, 3],
+        ],
+        hint: {
+          direction: "row",
+          index: 0,
+          cells: [
+            { color: "black", selected: true },
+            { color: "black", selected: true },
+            { color: "black", selected: true },
+            { color: "black", selected: true },
+            { color: "black", selected: true },
+          ],
+        },
+        resultSha:
+          "cf2165b6572ead973eb5470da6b7188249e8352db70a0c7f3ebbf1e6af6fe2d8",
+        height: 5,
+        width: 5,
+      },
+      {
+        rowClues: [[1], [2], [2], [2], [3]],
+        colClues: [[5], [4], [1], [0], [0]],
+        hint: {
+          direction: "col",
+          index: 0,
+          cells: [
+            { color: "black", selected: true },
+            { color: "black", selected: true },
+            { color: "black", selected: true },
+            { color: "black", selected: true },
+            { color: "black", selected: true },
+          ],
+        },
+        resultSha:
+          "be55324be1f4d8e48d112751a4ee35118759c9a77f0cf90c3bd0c7859570ad34",
+        height: 5,
+        width: 5,
+      },
+      {
+        rowClues: [[3], [3], [3], [3], [3]],
+        colClues: [[0], [0], [5], [5], [5]],
+        hint: {
+          direction: "col",
+          index: 2,
+          cells: [
+            { color: "black", selected: true },
+            { color: "black", selected: true },
+            { color: "black", selected: true },
+            { color: "black", selected: true },
+            { selected: true, color: "black" },
+          ],
+        },
+        resultSha:
+          "e9e4d0bbcf75c25fa3fd2862c6cf94abbc21a002e83a7e82101e469f23c5dac6",
+        height: 5,
+        width: 5,
+      },
+      {
+        rowClues: [[5], [5], [5], [5], [5]],
+        colClues: [[5], [5], [5], [5], [5]],
+        hint: {
+          direction: "col",
+          index: 0,
+          cells: [
+            { color: "black", selected: true },
+            { color: "black", selected: true },
+            { color: "black", selected: true },
+            { color: "black", selected: true },
+            { color: "black", selected: true },
+          ],
+        },
+        resultSha:
+          "0570ec93f1b5aa7692f2370cb647d90f14d0f8971902f1804826e048aeec6b12",
+        height: 5,
+        width: 5,
+      },
+      {
+        rowClues: [[3], [3], [3], [3], [3]],
+        colClues: [[5], [5], [5], [0], [0]],
+        hint: {
+          direction: "col",
+          index: 0,
+          cells: [
+            { color: "black", selected: true },
+            { color: "black", selected: true },
+            { color: "black", selected: true },
+            { color: "black", selected: true },
+            { color: "black", selected: true },
+          ],
+        },
+        resultSha:
+          "471cfa0cad3211928433a1dd1a8ee41d3d679cf4adfcc7ed3255ebb240dd99d9",
         height: 5,
         width: 5,
       },

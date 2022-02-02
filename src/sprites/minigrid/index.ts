@@ -1,3 +1,4 @@
+import { chunk, flattenDeep } from "lodash";
 import Phaser from "phaser";
 import { Cell } from "..";
 import { Battle } from "../../scenes/battle";
@@ -8,27 +9,28 @@ export class MiniGrid extends Phaser.GameObjects.Container {
     super(scene, x, y);
 
     if (puzzle) {
-      this.add(
-        puzzle.puzzles.map((_p: NonogramData, i: number) => {
-          const s = scene.add
-            .cell(
-              i === 0 || i === 2
-                ? 0
-                : 32 * (scale / (puzzle.puzzles.length / 2)),
-              i === 0 || i === 1
-                ? 0
-                : 32 * (scale / (puzzle.puzzles.length / 2))
-            )
-            .setOrigin(0, 0)
-            .playEmptyAnimation();
+      const grid = flattenDeep(
+        chunk(puzzle.puzzles, Math.sqrt(puzzle.puzzles.length)).map(
+          (row, x) => {
+            return row.map((_c, y) => {
+              const cellScale =
+                puzzle.puzzles.length > 1
+                  ? scale /
+                    (puzzle.puzzles.length / Math.sqrt(puzzle.puzzles.length))
+                  : scale;
 
-          puzzle.puzzles.length > 1
-            ? s.setScale(scale / (puzzle.puzzles.length / 2))
-            : s.setScale(scale);
-          return s;
-        })
+              const s = scene.add
+                .cell(y * 32 * cellScale, x * 32 * cellScale)
+                .setOrigin(0, 0)
+                .setScale(cellScale)
+                .playEmptyAnimation();
+
+              return s as Cell;
+            });
+          }
+        )
       );
-
+      this.add(grid);
       this.setAlpha(0.5);
     }
   }
