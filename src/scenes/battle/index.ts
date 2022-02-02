@@ -112,11 +112,12 @@ export class Battle extends Phaser.Scene {
       this.player.health
     );
 
-    this.enemy.attack();
+    (await this.enemy).attack();
   }
 
   handlePuzzleUpdate() {
     if (this.nonogram?.isPuzzleSolved()) {
+      this.enemy.stopAttacking();
       // this.keys?.select.removeAllListeners();
       this.nonogram?.rowClues?.map((r) => r.map((c) => c.setVisible(false)));
       this.nonogram?.colClues?.map((r) => r.map((c) => c.setVisible(false)));

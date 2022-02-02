@@ -20,6 +20,7 @@ export abstract class Enemy {
   protected speech!: Phaser.GameObjects.Container;
   protected sprite!: Phaser.GameObjects.Sprite;
   protected bubbleSprite!: Phaser.GameObjects.Sprite;
+  protected attackEvent!: Phaser.Time.TimerEvent;
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -73,7 +74,7 @@ export abstract class Enemy {
   }
 
   attack() {
-    this.scene.time.addEvent({
+    this.attackEvent = this.scene.time.addEvent({
       delay: Phaser.Math.Between(2000, 3000),
       loop: true,
       callback: () => {
@@ -83,6 +84,10 @@ export abstract class Enemy {
     });
 
     return this;
+  }
+
+  stopAttacking() {
+    this.attackEvent.remove();
   }
 
   draw(x?: number, y?: number, frame = this.key) {
