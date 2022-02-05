@@ -112,18 +112,19 @@ export class Battle extends Phaser.Scene {
       this.player.health
     );
 
-    (await this.enemy).attack();
+    (await this.enemy).startAttack();
   }
 
   handlePuzzleUpdate() {
     if (this.nonogram?.isPuzzleSolved()) {
-      this.enemy.stopAttacking();
+      this.enemy.stopAttack();
       // this.keys?.select.removeAllListeners();
       this.nonogram?.rowClues?.map((r) => r.map((c) => c.setVisible(false)));
       this.nonogram?.colClues?.map((r) => r.map((c) => c.setVisible(false)));
-      this.nonogram
-        .getAll()
-        .map((c) => c.state !== CellState.selected && c.setVisible(false));
+      this.nonogram.getAll().map((c) => {
+        c.state !== CellState.selected && c.setVisible(false);
+        c.setTint(0xffffff);
+      });
       const solvedContainer = this.nonogram.container;
 
       let currentMinigrid;
@@ -160,6 +161,8 @@ export class Battle extends Phaser.Scene {
               this.nonogram = this.add
                 .nonogram(this.puzzle.puzzles[this.currentPuzzleSection])
                 .draw();
+
+              this.enemy.startAttack();
             },
             [],
             this
@@ -196,9 +199,9 @@ export class Battle extends Phaser.Scene {
             endPoint
           );
 
-          nonogram
-            .getAll()
-            .forEach((c) => c.state !== CellState.selected && c.destroy());
+          nonogram.getAll().forEach((c) => {
+            c.state !== CellState.selected && c.destroy();
+          });
 
           this.tweens.add({
             targets: path,
@@ -212,10 +215,12 @@ export class Battle extends Phaser.Scene {
             },
           });
 
+          // Move the nonogram to the minigrids.
           this.tweens.add({
             targets: nonogram,
             duration: 500,
             scale: scale / 10 / Math.sqrt(currentPuzz.puzzles.length),
+            onStart: () => {},
             onComplete: () => {
               this.time.delayedCall(
                 1500,
@@ -319,6 +324,7 @@ export class Battle extends Phaser.Scene {
 
       this.time.delayedCall(1000, () => {
         this.nonogram = this.add.nonogram(this.puzzle.puzzles[0]).draw();
+        this.enemy.startAttack();
       });
     }
   }

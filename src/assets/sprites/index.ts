@@ -8,6 +8,7 @@ import letters from "./letters.png";
 import numbers from "./numbers.png";
 import player from "./player.png";
 import bubble from "./bubble.png";
+import flamecell from "./flame_cell.png";
 
 export {
   cell,
@@ -20,4 +21,5 @@ export {
   numbers,
   player,
   bubble,
+  flamecell,
 };

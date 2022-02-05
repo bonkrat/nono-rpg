@@ -3,12 +3,18 @@ import { random } from "lodash";
 import { scale } from "../../../scenes/battle/constants";
 import { Battle } from "../../../scenes/battle";
 import { LoadableAssets, register } from "../../../mixins/AssetLoader";
+import { flamecell } from "../../../assets/sprites";
 
 const BASE_ENEMY_ASSETS = [
   {
     url: bubble,
     key: "bubble",
     frameConfig: { frameWidth: 64, frameHeight: 64 },
+  },
+  {
+    url: flamecell,
+    key: "flamecell",
+    frameConfig: { frameWidth: 32, frameHeight: 32 },
   },
 ] as Partial<Phaser.Types.Loader.FileTypes.SpriteSheetFileConfig>[];
 
@@ -21,6 +27,8 @@ export abstract class Enemy {
   protected sprite!: Phaser.GameObjects.Sprite;
   protected bubbleSprite!: Phaser.GameObjects.Sprite;
   protected attackEvent!: Phaser.Time.TimerEvent;
+  private tweens = [] as Phaser.Tweens.Tween[];
+  private flames = [] as Phaser.GameObjects.Sprite[];
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -74,20 +82,107 @@ export abstract class Enemy {
   }
 
   attack() {
+    // (this.scene as Battle).player.removeHealth(1);
+    const scene = this.scene as Battle;
+    const randomRow = [
+      ...scene.nonogram?.getRandomRow(),
+      ...scene.nonogram?.getRandomColumn(),
+    ];
+    const originalTints = randomRow.map((c) => c.tint);
+    const originalAlphas = randomRow.map((c) => c.alpha);
+    const attackTint = 0x7a50ba;
+
+    this.tweens.push(
+      scene.tweens.addCounter({
+        from: 0.3,
+        to: 1,
+        duration: 500,
+        loop: 1000 / 500,
+        ease: "Cubic",
+        onStart: function () {
+          randomRow.forEach((c) => c.setTint(attackTint));
+        },
+        onUpdate: function (tween) {
+          const value = tween.getValue();
+          randomRow.forEach((c) => c.setAlpha(value));
+        },
+        onComplete: () => {
+          randomRow.forEach((c, i) => {
+            const flame = scene.add.sprite(0, 0, "flamecell").setVisible(false);
+
+            this.flames.push(flame);
+
+            flame
+              .setDisplayOrigin(flame.displayOriginX, flame.displayOriginY + 20)
+              .setPosition(
+                c.getBottomCenter(undefined, true).x,
+                c.getBottomCenter(undefined, true).y
+              )
+              .setScale(scale * 1.5)
+              .setTint(attackTint)
+              // .setBlendMode(BlendModes.MULTIPLY)
+              .play("flamecell");
+
+            let hitPlayer = false;
+
+            this.tweens.push(
+              scene.tweens.add({
+                targets: flame,
+                delay: i * 100,
+                duration: 300,
+                loop: false,
+                scale: scale,
+                ease: "Power2",
+                onStart: () => {
+                  flame.setVisible(true);
+                },
+                onUpdate: () => {
+                  if (
+                    scene.nonogram.getCell(scene.player.currentCell) === c &&
+                    hitPlayer === false
+                  ) {
+                    scene.player.removeHealth(1);
+                    hitPlayer = true;
+                  }
+                },
+                onComplete: (_tween, targets) => {
+                  c.setTint(originalTints[i]);
+                  c.setAlpha(originalAlphas[i]);
+                  targets[0].destroy();
+                },
+              })
+            );
+          });
+        },
+      })
+    );
+
+    this.speak();
+  }
+
+  startAttack() {
     this.attackEvent = this.scene.time.addEvent({
-      delay: Phaser.Math.Between(2000, 3000),
+      startAt: 2000,
+      delay: 3000,
       loop: true,
-      callback: () => {
-        (this.scene as Battle).player.removeHealth(1);
-        this.speak();
-      },
+      callback: this.attack,
+      callbackScope: this,
     });
 
     return this;
   }
 
-  stopAttacking() {
+  stopAttack() {
     this.attackEvent.remove();
+    this.tweens.map((tween) => {
+      tween.stop();
+      tween.remove();
+    });
+    this.tweens = [];
+
+    // TODO Use game object pool
+    this.flames.forEach((flame) => flame.destroy());
+    this.flames = [];
   }
 
   draw(x?: number, y?: number, frame = this.key) {

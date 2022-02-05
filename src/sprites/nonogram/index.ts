@@ -1,5 +1,5 @@
 import sha256 from "crypto-js/sha256";
-import { chunk, isEqual, times } from "lodash";
+import { chunk, isEqual, random, times } from "lodash";
 import Phaser from "phaser";
 import { Cell } from "..";
 import { CellState } from "../../common";
@@ -103,12 +103,29 @@ export class Nonogram {
     ) as Cell;
   }
 
+  getRandomCell(): Cell {
+    const randomCoords = {
+      x: random(0, this.nonogramData.width - 1),
+      y: random(0, this.nonogramData.height - 1),
+    };
+
+    return this.getCell(randomCoords);
+  }
+
   getAll(): Cell[] {
     return this.container.getAll("type", "Cell") as Cell[];
   }
 
   getColumns(): Cell[][] {
     return chunk(this.getAll(), this.nonogramData.width) as Cell[][];
+  }
+
+  getRandomRow() {
+    return this.getRows()[random(this.nonogramData.height - 1)];
+  }
+
+  getRandomColumn() {
+    return this.getColumns()[random(this.nonogramData.width - 1)];
   }
 
   getRows(): Cell[][] {

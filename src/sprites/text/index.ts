@@ -51,7 +51,8 @@ Phaser.GameObjects.GameObjectFactory.register(
     text: string,
     x: number,
     y: number,
-    scale: number
+    scale: number,
+    tint = 0x000000
   ) {
     if (!this.scene.anims.get("letter_a")) {
       Object.keys(letterMap).forEach((l) => {
@@ -102,7 +103,7 @@ Phaser.GameObjects.GameObjectFactory.register(
             letters.map((letter, i) => {
               const sprite = this.scene.add
                 .sprite(i * (32 * scale), 0, letter)
-                .setTint(0x000000)
+                .setTint(tint)
                 .play("letter_" + letter)
                 .setScale(scale);
 

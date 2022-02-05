@@ -84,6 +84,27 @@ export class Player extends Phaser.GameObjects.Sprite {
           healthChunk.play("emptyHealthBar");
         },
       });
+
+      this.scene.tweens.addCounter({
+        duration: 500,
+        from: 1,
+        repeat: 5,
+        to: 0,
+        onUpdate: (tween) => {
+          (this.scene as Battle).player.setAlpha(tween.getValue());
+        },
+        onComplete: () => {
+          (this.scene as Battle).player.setAlpha(1);
+        },
+      });
+
+      this.scene.cameras.main.shake(250);
+    } else {
+      this.scene.scene.transition({
+        target: "GameOver",
+        duration: 0,
+        remove: true,
+      });
     }
 
     return this.health;

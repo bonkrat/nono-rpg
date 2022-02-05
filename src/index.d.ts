@@ -71,7 +71,8 @@ declare namespace Phaser.GameObjects {
       text: string,
       x: number,
       y: number,
-      scale: number
+      scale: number,
+      tint?: number
     ): Phaser.GameObjects.Container;
     enemy(EnemyClass: EnemyClass): Promise<Enemy>;
   }
