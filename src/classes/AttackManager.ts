@@ -50,6 +50,20 @@ export class AttackManager {
     );
   }
 
+  /**
+   * Attacks a square area of cells all at once.
+   * @param radius the radius of the square.
+   * @param cell the center cell of the attack square.
+   */
+  cellAreaAttack(radius: number, cell?: Cell) {
+    const scene = this.scene as Battle;
+    const centerCell = cell || scene.nonogram.getRandomCell();
+
+    scene.nonogram
+      .getNeighborCells(radius, centerCell)
+      .forEach((c) => this.cellAttack(c));
+  }
+
   cellAttack(cell: Cell, index = 0) {
     const scene = this.scene as Battle;
     const originalTints = cell.tint;

@@ -15,6 +15,11 @@ export class Ghost extends Enemy {
     super(scene);
   }
 
+  attack() {
+    this.attackManager.rowAndColumnAttack();
+    this.speak();
+  }
+
   draw(...args: Parameters<Enemy["draw"]>) {
     super.draw(...args);
     this.sprite.setScale(1.75);

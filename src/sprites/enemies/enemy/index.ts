@@ -28,7 +28,7 @@ export abstract class Enemy {
   protected sprite!: Phaser.GameObjects.Sprite;
   protected bubbleSprite!: Phaser.GameObjects.Sprite;
   protected attackEvent!: Phaser.Time.TimerEvent;
-  private attackManager: AttackManager;
+  protected attackManager: AttackManager;
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -82,11 +82,17 @@ export abstract class Enemy {
     return this;
   }
 
+  /**
+   * Default attack for all enemies. Override for enemy specific behavior.
+   */
   attack() {
-    this.attackManager.rowAndColumnAttack();
     this.speak();
   }
 
+  /**
+   * Default attack sequence. Override for enemy specific attack sequence.
+   * @returns Enemy
+   */
   startAttack() {
     this.attackEvent = this.scene.time.addEvent({
       startAt: 2000,
@@ -96,7 +102,7 @@ export abstract class Enemy {
       callbackScope: this,
     });
 
-    return this;
+    return this as Enemy;
   }
 
   stopAttack() {

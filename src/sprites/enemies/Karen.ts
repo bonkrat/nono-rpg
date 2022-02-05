@@ -15,6 +15,11 @@ export class Karen extends Enemy {
     super(scene);
   }
 
+  attack() {
+    this.attackManager.cellAreaAttack(1);
+    this.speak();
+  }
+
   draw(...args: Parameters<Enemy["draw"]>) {
     super.draw(...args);
     this.sprite.setScale(1.75);

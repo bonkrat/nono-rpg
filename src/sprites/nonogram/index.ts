@@ -103,6 +103,18 @@ export class Nonogram {
     ) as Cell;
   }
 
+  getNeighborCells(radius: number, centerCell: Cell) {
+    const cells = this.getAll();
+
+    return cells.filter((c: Cell) => {
+      const cellDistances = this.getCellDistance(centerCell, c);
+
+      return cellDistances
+        .map((distance) => distance <= radius)
+        .every((v) => v === true);
+    });
+  }
+
   getRandomCell(): Cell {
     const randomCoords = {
       x: random(0, this.nonogramData.width - 1),
@@ -258,6 +270,24 @@ export class Nonogram {
     return sha256(result).toString() === this.nonogramData.resultSha;
   }
 
+  private getCellDistance(from: Cell, to: Cell) {
+    const fromPos = this.getCellCoordinates(from);
+    const toPos = this.getCellCoordinates(to);
+
+    return [fromPos.x - toPos.x, fromPos.y - toPos.y].map((v) => Math.abs(v));
+  }
+
+  private getCellCoordinates(cell: Cell): Coordinates {
+    const cells = this.getAll();
+    const cellIndex = cells.indexOf(cell);
+
+    console.log("cellIndex", cellIndex);
+
+    const x = Math.floor(cellIndex / this.nonogramData.height);
+    const y = cellIndex - x * this.nonogramData.width;
+
+    return { x, y };
+  }
   /**
    * Calculates the groups of selected cells for the nonogram.
    * e.g., [0,1,2,4,5,6,9,10] becomes [3, 2, 2, 1].

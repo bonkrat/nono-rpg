@@ -1,6 +1,7 @@
 import { shuffle } from "lodash";
 import dogwalker from "../../assets/sprites/enemies/dogwalker.png";
 import { puzzles } from "../../puzzles";
+import { Battle } from "../../scenes/battle";
 import { Enemy } from "./enemy";
 
 export class DogWalker extends Enemy {
@@ -13,6 +14,24 @@ export class DogWalker extends Enemy {
 
   constructor(scene: Phaser.Scene) {
     super(scene);
+  }
+
+  attack() {
+    const randomCell = (this.scene as Battle).nonogram.getRandomCell();
+    this.attackManager.cellAttack(randomCell);
+    this.speak();
+  }
+
+  startAttack(): DogWalker {
+    this.attackEvent = this.scene.time.addEvent({
+      startAt: 1000,
+      delay: 1000,
+      loop: true,
+      callback: this.attack,
+      callbackScope: this,
+    });
+
+    return this;
   }
 
   draw(...args: Parameters<Enemy["draw"]>) {
