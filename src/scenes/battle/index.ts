@@ -16,7 +16,7 @@ import { HealthBar, Player, Nonogram, MiniGrid } from "../../sprites";
 import enemies from "../../sprites/enemies";
 import { Enemy } from "../../sprites/enemies/enemy";
 import { width, scale, height } from "./constants";
-import("../../sprites");
+import "../../sprites";
 import cellSound from "../../assets/sounds/cell.mp3";
 import nonogramSound from "../../assets/sounds/nonogram.mp3";
 
