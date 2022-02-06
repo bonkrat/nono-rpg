@@ -187,6 +187,7 @@ export class Player extends Phaser.GameObjects.Sprite {
           scale: scale,
           onStart: () => {
             if (c.state === CellState.selected) {
+              c.selectSound.play();
               scene.emitter?.explode(6, c.x, c.y);
               scene.cameras.main.shake(100);
             }

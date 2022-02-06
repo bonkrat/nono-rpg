@@ -5,15 +5,21 @@ import { Battle } from "../../scenes/battle";
 import { scale } from "../../scenes/battle/constants";
 
 export class Cell extends Phaser.GameObjects.Sprite {
+  selectSound: any;
   constructor(scene: Battle, x: number, y: number) {
     super(scene, x, y, "cell");
     this.type = "Cell";
     this.setScale(scale);
+    this.selectSound = this.scene.sound.add("cellSelected", { volume: 0.5 });
   }
 
   fillCell() {
     this.setState(CellState.selected);
     this.animateSelectCell();
+  }
+
+  playSelectSound() {
+    this.selectSound.play();
   }
 
   animateSelectCell() {

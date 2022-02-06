@@ -17,6 +17,8 @@ import enemies from "../../sprites/enemies";
 import { Enemy } from "../../sprites/enemies/enemy";
 import { width, scale, height } from "./constants";
 import("../../sprites");
+import cellSound from "../../assets/sounds/cell.mp3";
+import nonogramSound from "../../assets/sounds/nonogram.mp3";
 
 /**
  * @class Battle
@@ -43,6 +45,7 @@ export class Battle extends Phaser.Scene {
   public nonogram!: Nonogram;
   public minigrids!: MiniGrid[];
   public enemy!: Enemy;
+  nonogramSound!: Phaser.Sound.BaseSound;
 
   constructor() {
     super({ key: "Battle" });
@@ -83,9 +86,13 @@ export class Battle extends Phaser.Scene {
         frameHeight: 32,
       });
     });
+
+    this.load.audio("cellSelected", [cellSound]);
+    this.load.audio("nonogramSound", [nonogramSound]);
   }
 
   async create({ enemyClass }: { enemyClass: EnemyClass }) {
+    this.nonogramSound = this.sound.add("nonogramSound");
     this.enemy = (await this.add.enemy(enemyClass)).draw();
 
     // Create number animations
@@ -256,6 +263,7 @@ export class Battle extends Phaser.Scene {
                     );
                   }
 
+                  this.nonogramSound.play();
                   this.cameras.main.shake(200);
                 },
                 [
