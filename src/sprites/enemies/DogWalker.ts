@@ -19,15 +19,22 @@ export class DogWalker extends Enemy {
   attack() {
     const randomCell = (this.scene as Battle).nonogram.getRandomCell();
     this.attackManager.cellAttack(randomCell);
-    this.speak();
   }
 
   startAttack(): DogWalker {
     this.attackEvent = this.scene.time.addEvent({
-      startAt: 1000,
-      delay: 1000,
+      startAt: 500,
+      delay: 500,
       loop: true,
       callback: this.attack,
+      callbackScope: this,
+    });
+
+    this.scene.time.addEvent({
+      startAt: 1000,
+      delay: 2000,
+      loop: true,
+      callback: this.speak,
       callbackScope: this,
     });
 

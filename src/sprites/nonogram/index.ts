@@ -281,8 +281,6 @@ export class Nonogram {
     const cells = this.getAll();
     const cellIndex = cells.indexOf(cell);
 
-    console.log("cellIndex", cellIndex);
-
     const x = Math.floor(cellIndex / this.nonogramData.height);
     const y = cellIndex - x * this.nonogramData.width;
 
