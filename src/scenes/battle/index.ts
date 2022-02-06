@@ -48,7 +48,7 @@ export class Battle extends Phaser.Scene {
   nonogramSound!: Phaser.Sound.BaseSound;
 
   constructor() {
-    super({ key: "Battle" });
+    super("Battle");
   }
 
   init({ enemyClass }: { enemyClass: EnemyClass }) {
