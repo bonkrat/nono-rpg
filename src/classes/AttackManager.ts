@@ -31,12 +31,12 @@ export class AttackManager {
 
   columnAttack(column?: Cell[]) {
     const col = column || (this.scene as Battle).nonogram?.getRandomColumn();
-    col.forEach((c, i) => this.tweens.push(this.cellAttack(c, i)));
+    col.forEach((c, i) => this.cellAttack(c, i));
   }
 
   rowAttack(row?: Cell[]) {
     const r = row || (this.scene as Battle).nonogram?.getRandomRow();
-    r.forEach((c, i) => this.tweens.push(this.cellAttack(c, i)));
+    r.forEach((c, i) => this.cellAttack(c, i));
   }
 
   rowAndColumnAttack() {
@@ -68,7 +68,7 @@ export class AttackManager {
     const scene = this.scene as Battle;
     const originalTints = cell.tint;
     const originalAlphas = cell.alpha;
-    return scene.tweens.addCounter({
+    const tween = scene.tweens.addCounter({
       from: 0.3,
       to: 1,
       duration: 500,
@@ -121,6 +121,9 @@ export class AttackManager {
         );
       },
     });
+
+    this.tweens.push(tween);
+    return tween;
   }
 
   stopAttack() {
