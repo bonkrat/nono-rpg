@@ -52,7 +52,7 @@ Phaser.GameObjects.GameObjectFactory.register(
     x: number,
     y: number,
     scale: number,
-    tint = 0x000000
+    tint = 0xffffff
   ) {
     if (!this.scene.anims.get("letter_a")) {
       Object.keys(letterMap).forEach((l) => {

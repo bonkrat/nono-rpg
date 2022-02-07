@@ -58,6 +58,7 @@ export class Battle extends Phaser.Scene {
       left: Phaser.Input.Keyboard.KeyCodes.A,
       right: Phaser.Input.Keyboard.KeyCodes.D,
       select: Phaser.Input.Keyboard.KeyCodes.SHIFT,
+      pause: Phaser.Input.Keyboard.KeyCodes.ESC,
     }) as BattleKeys;
 
     // this.enemy = new enemyClass(this);
@@ -345,28 +346,32 @@ export class Battle extends Phaser.Scene {
   }
 
   update() {
-    for (const k in this?.keys) {
-      const key = this?.keys[k];
+    if (this.keys?.pause.isDown) {
+      this.scene.switch("Pause");
+    } else {
+      for (const k in this.keys) {
+        const key = this?.keys[k];
 
-      if (key) {
-        if (key.isUp) {
-          if (key.firedOnce) key.firedOnce = false;
-        }
+        if (key) {
+          if (key.isUp) {
+            if (key.firedOnce) key.firedOnce = false;
+          }
 
-        if (key.isDown && !key.firedOnce) {
-          this.player.move(key);
-          key.firedOnce = true;
-        }
+          if (key.isDown && !key.firedOnce) {
+            this.player.move(key);
+            key.firedOnce = true;
+          }
 
-        // Sliding controls
-        if (!key.previousDuration) {
-          key.previousDuration = key.getDuration();
-        }
+          // Sliding controls
+          if (!key.previousDuration) {
+            key.previousDuration = key.getDuration();
+          }
 
-        const dur = key.getDuration() - key.previousDuration;
-        if (key.isDown && key.getDuration() > 250 && dur > 200) {
-          key.previousDuration = key.getDuration();
-          this.player.move(key);
+          const dur = key.getDuration() - key.previousDuration;
+          if (key.isDown && key.getDuration() > 250 && dur > 200) {
+            key.previousDuration = key.getDuration();
+            this.player.move(key);
+          }
         }
       }
     }

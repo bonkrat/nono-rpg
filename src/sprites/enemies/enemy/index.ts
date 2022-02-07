@@ -46,7 +46,8 @@ export abstract class Enemy {
         this.dialogue[random(this.dialogue.length - 1)],
         random(enemyBounds.left, enemyBounds.right),
         randomY,
-        0.5
+        0.5,
+        0x000000
       )
       .setVisible(false);
 
