@@ -192,7 +192,7 @@ export default [
     ],
   },
   {
-    name: "W",
+    name: "J",
     puzzles: [
       {
         rowClues: [[1], [1], [1], [1, 1], [3]],
