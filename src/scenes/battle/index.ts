@@ -20,6 +20,8 @@ import "../../sprites";
 import cellSound from "../../assets/sounds/cell.mp3";
 import nonogramSound from "../../assets/sounds/nonogram.mp3";
 
+const NONOGRAM_SCALE = 2.25;
+
 /**
  * @class Battle
  * @property {PuzzleSet} puzzleSet the current set of puzzles that need to be completed to win the battle.
@@ -110,7 +112,9 @@ export class Battle extends Phaser.Scene {
 
     this.minigrids = this.buildMiniGrids();
 
-    this.nonogram = this.add.nonogram(this.puzzleSet[0].puzzles[0]).draw();
+    this.nonogram = this.add
+      .nonogram(this.puzzleSet[0].puzzles[0], NONOGRAM_SCALE)
+      .draw();
 
     this.player = this.add.player(this.nonogram.x, this.nonogram.y);
 
@@ -167,7 +171,10 @@ export class Battle extends Phaser.Scene {
             1000,
             () => {
               this.nonogram = this.add
-                .nonogram(this.puzzle.puzzles[this.currentPuzzleSection])
+                .nonogram(
+                  this.puzzle.puzzles[this.currentPuzzleSection],
+                  NONOGRAM_SCALE
+                )
                 .draw();
 
               this.enemy.startAttack();
@@ -227,7 +234,7 @@ export class Battle extends Phaser.Scene {
           this.tweens.add({
             targets: nonogram,
             duration: 500,
-            scale: scale / 10 / Math.sqrt(currentPuzz.puzzles.length),
+            scale: scale / 12 / Math.sqrt(currentPuzz.puzzles.length),
             onStart: () => {},
             onComplete: () => {
               this.time.delayedCall(
@@ -237,7 +244,7 @@ export class Battle extends Phaser.Scene {
                   puzzleLength: number,
                   puzzleName: string
                 ) => {
-                  const offset = 5;
+                  const offset = 2;
                   if (currentPuzzleSection > 0) {
                     // The current nonogram is part of a set of a larger image so set it within the minigrid.
                     nonogram.x =
@@ -285,7 +292,7 @@ export class Battle extends Phaser.Scene {
 
   private buildMiniGrids(): MiniGrid[] {
     const bottomAlign = (x: number) => x + height - 32 * scale - 32 * scale;
-    const leftAlign = (x: number) => x + 32;
+    const leftAlign = (x: number) => x + 32 * 4;
 
     return this.puzzleSet.map((puzz, index) => {
       const margin = 10 * index;
@@ -295,8 +302,9 @@ export class Battle extends Phaser.Scene {
             32 * scale * index +
             margin * this.puzzleSet.length
         ),
-        bottomAlign(32),
-        puzz
+        bottomAlign(16),
+        puzz,
+        scale
       );
 
       return minigrid;
@@ -332,7 +340,9 @@ export class Battle extends Phaser.Scene {
       this.currentPuzzleIndex = randomPuzzleIndex;
 
       this.time.delayedCall(1000, () => {
-        this.nonogram = this.add.nonogram(this.puzzle.puzzles[0]).draw();
+        this.nonogram = this.add
+          .nonogram(this.puzzle.puzzles[0], NONOGRAM_SCALE)
+          .draw();
         this.enemy.startAttack();
       });
     }

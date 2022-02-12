@@ -116,7 +116,10 @@ export abstract class Enemy {
     const yPos = y || 0;
     this.sprite = this.scene.add.sprite(xPos, yPos, this.key);
     this.sprite
-      .setPosition(this.sprite.displayWidth + 32 * scale, 300)
+      .setPosition(
+        this.sprite.displayWidth + +this.sprite.displayWidth / 2 + 32 * scale,
+        350
+      )
       .play(frame);
     return this;
   }

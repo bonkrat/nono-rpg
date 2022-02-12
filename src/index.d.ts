@@ -60,12 +60,15 @@ interface EnemyClass {
 
 declare namespace Phaser.GameObjects {
   interface GameObjectFactory {
-    nonogram(nonogramData: NonogramData): import("./sprites/nonogram").Nonogram;
-    cell(x: number, y: number): Cell;
+    nonogram(
+      nonogramData: NonogramData,
+      scale: number
+    ): import("./sprites/nonogram").Nonogram;
+    cell(x: number, y: number, scale?: number): Cell;
     healthbar(x: number, y: number, healthAmount: number): HealthBar;
     healthcap(x: number, y: number): HealthCap;
     healthchunk(x: number, y: number): HealthChunk;
-    minigrid(x: number, y: number, puzzle: Puzzle): MiniGrid;
+    minigrid(x: number, y: number, puzzle: Puzzle, scale: number): MiniGrid;
     player(x: number, y: number): Player;
     textsprite(
       text: string,

@@ -22,7 +22,7 @@ export class Karen extends Enemy {
 
   draw(...args: Parameters<Enemy["draw"]>) {
     super.draw(...args);
-    this.sprite.setScale(1.75);
+    this.sprite.setScale(2.5);
     return this;
   }
 }

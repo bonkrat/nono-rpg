@@ -4,7 +4,7 @@ import Phaser from "phaser";
 import { Cell } from "..";
 import { CellState } from "../../common";
 import { Battle } from "../../scenes/battle";
-import { height, scale, width } from "../../scenes/battle/constants";
+import { height, width } from "../../scenes/battle/constants";
 
 export class Nonogram {
   nonogramData: NonogramData;
@@ -12,16 +12,22 @@ export class Nonogram {
   colClues: Phaser.GameObjects.Sprite[][];
   scene: Phaser.Scene;
   container: Phaser.GameObjects.Container;
+  scale: number;
 
-  constructor(scene: Battle, data: NonogramData) {
+  constructor(scene: Battle, data: NonogramData, scale: number) {
     this.scene = scene;
     this.nonogramData = data;
     this.container = scene.add.container();
+    this.scale = scale;
 
     let cells: Cell[][] = [];
     times(this.nonogramData.height, (i) => {
       times(this.nonogramData.width, (j) => {
-        const cell = scene.add.cell(32 * i * scale, 32 * j * scale);
+        const cell = scene.add.cell(
+          32 * i * this.scale,
+          32 * j * this.scale,
+          this.scale
+        );
         if (!cells[j]) {
           cells[j] = [];
         }
@@ -43,7 +49,7 @@ export class Nonogram {
       lifespan: 1000,
       speed: 600,
       gravityY: 2000,
-      scale: { start: scale, end: 0.5 },
+      scale: { start: this.scale, end: 0.5 },
       rotate: { start: 0, end: 360, ease: "Power2" },
       on: false,
     });
@@ -54,8 +60,8 @@ export class Nonogram {
   }
 
   draw(coords?: Coordinates) {
-    const middle = width - this.nonogramData.width * 32 * scale;
-    const bottom = height - this.nonogramData.height * 32 * scale;
+    const middle = width - this.nonogramData.width * 32 * this.scale;
+    const bottom = height - this.nonogramData.height * 32 * this.scale;
 
     const x = coords?.x || middle,
       y = coords?.y || bottom;
@@ -63,7 +69,7 @@ export class Nonogram {
     this.container.setPosition(x, y);
 
     this.getAll().forEach((cell: Cell) => {
-      cell.playEmptyAnimation();
+      cell.setCellEmptyStyles();
     });
 
     this.nonogramData.hint?.cells?.forEach((c, i) => {
@@ -225,7 +231,7 @@ export class Nonogram {
       return [...clues].reverse().map((clue, j) => {
         const firstRowCell = this.getRows()[i][0];
         const clueSprite = this.scene.add.sprite(
-          firstRowCell.getCenter().x - 32 * scale * (j + 1),
+          firstRowCell.getCenter().x - 32 * this.scale * (j + 1),
           firstRowCell.getCenter().y,
           "clue"
         );
@@ -243,7 +249,7 @@ export class Nonogram {
         const firstColCell = this.getColumns()[i][0];
         const clueSprite = this.scene.add.sprite(
           firstColCell.getCenter().x,
-          firstColCell.getCenter().y - 32 * scale * (j + 1),
+          firstColCell.getCenter().y - 32 * this.scale * (j + 1),
           "clue"
         );
         clueSprite.type = "Clue";
@@ -323,8 +329,12 @@ export class Nonogram {
 
 Phaser.GameObjects.GameObjectFactory.register(
   "nonogram",
-  function (this: Phaser.GameObjects.GameObjectFactory, data: NonogramData) {
-    const nonogram = new Nonogram(this.scene as Battle, data);
+  function (
+    this: Phaser.GameObjects.GameObjectFactory,
+    data: NonogramData,
+    scale: number
+  ) {
+    const nonogram = new Nonogram(this.scene as Battle, data, scale);
 
     this.displayList.add(nonogram.container);
     return nonogram;

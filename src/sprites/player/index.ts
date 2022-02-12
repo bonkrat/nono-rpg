@@ -112,7 +112,6 @@ export class Player extends Phaser.GameObjects.Sprite {
 
   move(key: BattleKey) {
     const scene = this.scene as Battle;
-    const { dragging, currentCell } = this;
     const keys = scene.keys;
     const nonogram = scene.nonogram;
     const data = nonogram?.nonogramData;
@@ -127,29 +126,40 @@ export class Player extends Phaser.GameObjects.Sprite {
       } else if (key === keys?.right) {
         this.moveRight(data);
       }
-
-      scene.tweens.add({
-        targets: this,
-        duration: 150,
-        x: nonogram.x + currentCell.y * 32 * scale,
-        y: nonogram.y + currentCell.x * 32 * scale,
-        ease: "Bounce",
-        onStart: function () {
-          if (scene.keys?.select?.isDown) {
-            const sprite = scene.nonogram.getCell(currentCell);
-            sprite.setCellHoverStyles();
-
-            if (!dragging.includes(sprite)) {
-              dragging.push(sprite);
-            }
-          }
-        },
-      });
     }
+
+    if ([keys?.down, keys?.up, keys?.left, keys?.right].includes(key)) {
+      this.tweenPlayerMovement();
+    }
+  }
+
+  private tweenPlayerMovement() {
+    const scene = this.scene as Battle;
+    const { dragging, currentCell } = this;
+    const nonogram = scene.nonogram;
+
+    scene.tweens.add({
+      targets: this,
+      duration: 150,
+      x: nonogram.getCell(this.currentCell).getBounds().centerX,
+      y: nonogram.getCell(this.currentCell).getBounds().centerY,
+      ease: "Bounce",
+      onStart: function () {
+        if (scene.keys?.select?.isDown) {
+          const sprite = scene.nonogram.getCell(currentCell);
+          sprite.setCellHoverStyles();
+
+          if (!dragging.includes(sprite)) {
+            dragging.push(sprite);
+          }
+        }
+      },
+    });
   }
 
   private setupPlayerMovement() {
     const scene = this.scene as Battle;
+
     scene.keys?.select.on("down", () => {
       const {
         currentCell: { x, y },
@@ -157,8 +167,10 @@ export class Player extends Phaser.GameObjects.Sprite {
 
       const c = scene.nonogram?.getCell({ x, y });
       if (c) {
-        c.setCellHoverStyles();
-        this.dragging.push(c);
+        if (!this.dragging.includes(c)) {
+          c.setCellHoverStyles();
+          this.dragging.push(c);
+        }
       }
     });
 

@@ -22,7 +22,7 @@ export class Ghost extends Enemy {
 
   draw(...args: Parameters<Enemy["draw"]>) {
     super.draw(...args);
-    this.sprite.setScale(1.75);
+    this.sprite.setScale(3);
     return this;
   }
 }
