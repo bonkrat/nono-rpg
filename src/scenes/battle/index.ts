@@ -78,7 +78,6 @@ export class Battle extends Phaser.Scene {
       ["cellSelected", cellSelected],
       ["numbers", numbers],
       ["player", player],
-      ["letters", letters],
       ["fullHealthBar", fullHealthBar],
       ["fullHealthCap", fullHealthCap],
       ["emptyHealthBar", emptyHealthBar],
@@ -96,7 +95,7 @@ export class Battle extends Phaser.Scene {
 
   async create({ enemyClass }: { enemyClass: EnemyClass }) {
     this.nonogramSound = this.sound.add("nonogramSound");
-    this.enemy = (await this.add.enemy(enemyClass)).draw();
+    this.enemy = (await this.add.enemy(enemyClass)).draw(300, 350);
 
     // Create number animations
     for (var i = 0; i < 10; i++) {

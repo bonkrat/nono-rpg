@@ -9,11 +9,20 @@ export class DogWalker extends Enemy {
   static assets = [
     { url: dogwalker, frameConfig: { frameWidth: 128, frameHeight: 129 } },
   ];
+  introduction = ["Check out this dog"];
   displayName = "Dog Walker";
   dialogue = ["check out my dog", "baz qix "];
 
   constructor(scene: Phaser.Scene) {
     super(scene);
+
+    // this.scene.time.addEvent({
+    //   startAt: 1000,
+    //   delay: 4000,
+    //   loop: true,
+    //   callback: this.speak,
+    //   callbackScope: this,
+    // });
   }
 
   attack() {
@@ -27,14 +36,6 @@ export class DogWalker extends Enemy {
       delay: 500,
       loop: true,
       callback: this.attack,
-      callbackScope: this,
-    });
-
-    this.scene.time.addEvent({
-      startAt: 1000,
-      delay: 2000,
-      loop: true,
-      callback: this.speak,
       callbackScope: this,
     });
 

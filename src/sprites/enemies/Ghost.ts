@@ -10,6 +10,7 @@ export class Ghost extends Enemy {
   ];
   displayName = "Ghost";
   dialogue = ["ooooooo", "aaaaaa"];
+  introduction = ["Foobar baz qix", "baz qix foobar", "get a job"];
 
   constructor(scene: Phaser.Scene) {
     super(scene);
@@ -17,7 +18,6 @@ export class Ghost extends Enemy {
 
   attack() {
     this.attackManager.rowAndColumnAttack();
-    this.speak();
   }
 
   draw(...args: Parameters<Enemy["draw"]>) {

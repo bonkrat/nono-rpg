@@ -10,6 +10,7 @@ export class Karen extends Enemy {
   ];
   displayName = "Karen";
   dialogue = ["foobar baz biz", "baz qix "];
+  introduction = ["Foobar baz qix", "baz qix foobar", "get a job"];
 
   constructor(scene: Phaser.Scene) {
     super(scene);
@@ -17,7 +18,6 @@ export class Karen extends Enemy {
 
   attack() {
     this.attackManager.cellAreaAttack(1);
-    this.speak();
   }
 
   draw(...args: Parameters<Enemy["draw"]>) {

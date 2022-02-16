@@ -1,14 +1,19 @@
 export function LoadableAssets<TBase extends Loadable>(
   Base: TBase,
-  assets: Partial<Phaser.Types.Loader.FileTypes.SpriteSheetFileConfig>[],
+  assets: {
+    spriteConfig?: Partial<Phaser.Types.Loader.FileTypes.SpriteSheetFileConfig>;
+    animation?: (scene: Phaser.Scene) => Phaser.Types.Animations.Animation;
+  }[],
   key?: string
 ) {
   return class AssetLoading extends Base {
     public key? = key;
     protected assets = assets;
+    protected scene: Phaser.Scene;
 
     constructor(...args: any[]) {
       super(...args);
+      this.scene = args[0];
     }
 
     async loadAssets() {
@@ -29,13 +34,14 @@ export function LoadableAssets<TBase extends Loadable>(
       });
 
       this.assets.forEach(async (asset) => {
-        const key = asset.key || this.key;
+        const spriteConfig = asset.spriteConfig;
+        const key = spriteConfig?.key || this.key;
 
         if (key) {
           this.scene.load.spritesheet({
             frameConfig: { frameWidth: 32 },
             key,
-            ...asset,
+            ...asset?.spriteConfig,
           });
         } else {
           throw new Error("Missing key when loading assets for " + Base.name);
@@ -47,8 +53,14 @@ export function LoadableAssets<TBase extends Loadable>(
       await loaderPromise;
 
       this.assets
-        .map((asset) => asset.key)
-        .forEach((key = this.key) => {
+        // .map((asset) => asset.animation.key)
+        .forEach((asset) => {
+          let animation = undefined;
+          if (asset.animation) {
+            animation = asset.animation(this.scene);
+          }
+
+          const key = animation?.key || this.key;
           if (!key) {
             throw new Error(
               "Missing key when loading animations for " + Base.name
@@ -62,6 +74,7 @@ export function LoadableAssets<TBase extends Loadable>(
             }),
             frameRate: 3,
             repeat: -1,
+            ...animation,
           });
           // } else {
           //   console.warn(
@@ -76,12 +89,20 @@ export function LoadableAssets<TBase extends Loadable>(
   };
 }
 
-export function register(factoryType: string, factoryFunction: Function) {
+export function register<T>(
+  factoryType: string,
+  factoryFunction: Function,
+  cb?: (instance: T) => any
+) {
   Phaser.GameObjects.GameObjectFactory.register(
     factoryType,
     async function (this: Phaser.GameObjects.GameObjectFactory, ...args: any) {
       const instance = factoryFunction.call(this, ...args);
       await instance.loadAssets();
+
+      if (cb) {
+        cb(instance);
+      }
 
       return instance;
     }
