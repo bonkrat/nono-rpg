@@ -222,15 +222,14 @@ const assets = Object.keys(letterMap).map((l) => {
   return {
     spriteConfig: {
       url: letters,
-      key: "letter_" + l,
+      key: "letters",
       frameWidth: 32,
       frameHeight: 32,
-      startFrame: letterMap[l],
     },
     animation: function (scene: Phaser.Scene) {
       return {
         key: "letter_" + l,
-        frames: scene.anims.generateFrameNumbers("letter_" + l, {
+        frames: scene.anims.generateFrameNumbers("letters", {
           frames: [0, 1, 2].map((n) => n + letterMap[l] * 3),
         }),
         frameRate: 3,

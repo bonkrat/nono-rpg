@@ -38,11 +38,13 @@ export function LoadableAssets<TBase extends Loadable>(
         const key = spriteConfig?.key || this.key;
 
         if (key) {
-          this.scene.load.spritesheet({
-            frameConfig: { frameWidth: 32 },
-            key,
-            ...asset?.spriteConfig,
-          });
+          if (!this.scene.textures.exists(key)) {
+            this.scene.load.spritesheet({
+              frameConfig: { frameWidth: 32 },
+              key,
+              ...asset?.spriteConfig,
+            });
+          }
         } else {
           throw new Error("Missing key when loading assets for " + Base.name);
         }
@@ -54,26 +56,31 @@ export function LoadableAssets<TBase extends Loadable>(
 
       this.assets.forEach((asset) => {
         let animation = undefined;
+        let key = asset.spriteConfig?.key || this.key;
+
+        if (!key) {
+          if (!key) {
+            throw new Error(
+              "Missing key when loading animations for " + Base.name
+            );
+          }
+        }
+
         if (asset.animation) {
           animation = asset.animation(this.scene);
+          key = animation.key || key;
+        } else {
+          animation = {
+            key,
+            frames: this.scene.anims.generateFrameNumbers(key, {
+              frames: [0, 1, 2],
+            }),
+            frameRate: 3,
+            repeat: -1,
+          };
         }
 
-        const key = animation?.key || asset.spriteConfig?.key || this.key;
-        if (!key) {
-          throw new Error(
-            "Missing key when loading animations for " + Base.name
-          );
-        }
-
-        this.scene.anims.create({
-          key,
-          frames: this.scene.anims.generateFrameNumbers(key, {
-            frames: [0, 1, 2],
-          }),
-          frameRate: 3,
-          repeat: -1,
-          ...animation,
-        });
+        this.scene.anims.create(animation);
         // } else {
         //   console.warn(
         //     "Tried loading another animation for key " +
