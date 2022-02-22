@@ -3,6 +3,7 @@ import Phaser from "phaser";
 import { letters } from "../../assets/sprites";
 import { LoadableAssets, register } from "../../mixins/AssetLoader";
 import { width } from "../../scenes/battle/constants";
+import { scale as baseScale } from "../../scenes/battle/constants";
 
 export class TextSprite {
   text: string;
@@ -28,9 +29,9 @@ export class TextSprite {
   constructor(
     scene: Phaser.Scene,
     text: string,
-    x: number,
-    y: number,
-    scale: number,
+    x = 0,
+    y = 0,
+    scale = baseScale,
     tint = 0xffffff,
     curve?: Phaser.Curves.Line
   ) {
@@ -47,7 +48,7 @@ export class TextSprite {
         let textCurve;
 
         if (!curve) {
-          const startPoint = new Phaser.Math.Vector2(0, y);
+          const startPoint = new Phaser.Math.Vector2(x, y);
           const endPoint = new Phaser.Math.Vector2(width, y);
           textCurve = new Phaser.Curves.Line(startPoint, endPoint);
         } else {
