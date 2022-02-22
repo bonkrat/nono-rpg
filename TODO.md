@@ -1,3 +1,8 @@
-* Check cache before loading asset in AssetLoader
+# Tech Debt
 * Add letters/numbers/symbols to textsprite
-* Add zones to scenes
+
+# Quality of Life enhancements
+* Add zones to scenes for better sprite placements and scene orginization 
+
+# Bugs
+* Disabled cell tint/alpha is wrong sometimes
