@@ -5,7 +5,6 @@ import {
   cellSelected,
   numbers,
   player,
-  letters,
   fullHealthBar,
   fullHealthCap,
   emptyHealthBar,
@@ -19,6 +18,7 @@ import { width, scale, height } from "./constants";
 import "../../sprites";
 import cellSound from "../../assets/sounds/cell.mp3";
 import nonogramSound from "../../assets/sounds/nonogram.mp3";
+import { pickRandom } from "../../utils";
 
 const NONOGRAM_SCALE = 2.25;
 
@@ -63,7 +63,6 @@ export class Battle extends Phaser.Scene {
       pause: Phaser.Input.Keyboard.KeyCodes.ESC,
     }) as BattleKeys;
 
-    // this.enemy = new enemyClass(this);
     this.puzzleSet = enemyClass.puzzleSet;
     this.puzzle = this.puzzleSet[0];
     this.currentPuzzleSection = 0;
@@ -123,7 +122,46 @@ export class Battle extends Phaser.Scene {
       this.player.health
     );
 
-    (await this.enemy).startAttack();
+    this.enemy.startAttack();
+    this.time.addEvent({
+      startAt: 2000,
+      delay: 3000,
+      loop: true,
+      callback: this.battleSpeak,
+      callbackScope: this,
+    });
+  }
+
+  /**
+   * Displays enemy text during the battle.
+   */
+  async battleSpeak() {
+    const enemy = this.enemy;
+
+    const enemyBounds = enemy.sprite.getBounds();
+    const randomX = pickRandom([
+      enemyBounds.left + 100,
+      enemyBounds.right - 100,
+    ]);
+    const randomY = pickRandom([
+      enemyBounds.top + 100,
+      enemyBounds.bottom - 100,
+    ]);
+    const startPoint = new Phaser.Math.Vector2(0, 0 - 30);
+    const controlPoint1 = new Phaser.Math.Vector2(0 + 50, 0 - 20);
+    const controlPoint2 = new Phaser.Math.Vector2(0 + 100, 0);
+    const endPoint = new Phaser.Math.Vector2(0 - 50, 0 + 20);
+
+    const curve = new Phaser.Curves.CubicBezier(
+      startPoint,
+      controlPoint1,
+      controlPoint2,
+      endPoint
+    );
+
+    const randomDialog = pickRandom(this.enemy.dialogue);
+
+    enemy.speak(randomDialog, randomX, randomY, 0.75, 0x000000, curve, true);
   }
 
   handlePuzzleUpdate() {

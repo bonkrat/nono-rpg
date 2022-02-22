@@ -1,10 +1,11 @@
 import sha256 from "crypto-js/sha256";
-import { chunk, isEqual, random, times } from "lodash";
+import { chunk, isEqual, times } from "lodash";
 import Phaser from "phaser";
 import { Cell } from "..";
 import { CellState } from "../../common";
 import { Battle } from "../../scenes/battle";
 import { height, width } from "../../scenes/battle/constants";
+import { pickRandom } from "../../utils";
 
 export class Nonogram {
   nonogramData: NonogramData;
@@ -122,12 +123,7 @@ export class Nonogram {
   }
 
   getRandomCell(): Cell {
-    const randomCoords = {
-      x: random(0, this.nonogramData.width - 1),
-      y: random(0, this.nonogramData.height - 1),
-    };
-
-    return this.getCell(randomCoords);
+    return pickRandom(this.getAll());
   }
 
   getAll(): Cell[] {
@@ -139,11 +135,11 @@ export class Nonogram {
   }
 
   getRandomRow() {
-    return this.getRows()[random(this.nonogramData.height - 1)];
+    return pickRandom(this.getRows());
   }
 
   getRandomColumn() {
-    return this.getColumns()[random(this.nonogramData.width - 1)];
+    return pickRandom(this.getColumns());
   }
 
   getRows(): Cell[][] {

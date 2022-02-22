@@ -28,6 +28,7 @@ export class DogWalker extends Enemy {
   attack() {
     const randomCell = (this.scene as Battle).nonogram.getRandomCell();
     this.attackManager.cellAttack(randomCell);
+    return this;
   }
 
   startAttack(): DogWalker {

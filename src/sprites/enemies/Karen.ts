@@ -18,6 +18,7 @@ export class Karen extends Enemy {
 
   attack() {
     this.attackManager.cellAreaAttack(1);
+    return this;
   }
 
   draw(...args: Parameters<Enemy["draw"]>) {

@@ -91,3 +91,10 @@ type RequireAtLeast<T, Keys extends keyof T = keyof T> = Pick<
   {
     [K in Keys]?: Required<Pick<T, K>> & Partial<Pick<T, Exclude<Keys, K>>>;
   }[Keys];
+
+interface Container<T> extends Phaser.GameObjects.Container {
+  getAll(): T[];
+}
+
+type WordContainer = Container<Phaser.GameObjects.Sprite>;
+type TextContainer = Container<WordContainer>;

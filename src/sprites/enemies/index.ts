@@ -1,12 +1,12 @@
 import { Karen } from "./Karen";
 import { DogWalker } from "./DogWalker";
 import { Ghost } from "./Ghost";
-import { random } from "lodash";
+import { pickRandom } from "../../utils";
 
 const enemyClasses = [Karen, DogWalker, Ghost] as EnemyClass[];
 
 export function getRandomEnemyClass() {
-  return enemyClasses[random(enemyClasses.length - 1)];
+  return pickRandom(enemyClasses);
 }
 
 export default enemyClasses;

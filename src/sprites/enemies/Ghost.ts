@@ -18,6 +18,7 @@ export class Ghost extends Enemy {
 
   attack() {
     this.attackManager.rowAndColumnAttack();
+    return this;
   }
 
   draw(...args: Parameters<Enemy["draw"]>) {
