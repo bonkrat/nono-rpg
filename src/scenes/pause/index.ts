@@ -1,4 +1,4 @@
-import { height, scale } from "../battle/constants";
+import { scale } from "../battle/constants";
 import { Setting } from "./Setting";
 
 const fullscreen = new Setting<boolean>(
