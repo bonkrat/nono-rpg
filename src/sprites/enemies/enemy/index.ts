@@ -82,7 +82,75 @@ export abstract class Enemy {
     return this.speech;
   }
 
-  createSpeechBubble(x: number, y: number) {
+  /**
+   * Default attack sequence. Override for enemy specific attack sequence.
+   * Starts in 1 second and attacke every 3 seconds by default. Loops indefinintely until the attack is stopped.
+   * @returns Enemy
+   */
+  startAttack() {
+    this.attackEvent = this.scene.time.addEvent({
+      startAt: 2000,
+      delay: 3000,
+      loop: true,
+      callback: this.attack,
+      callbackScope: this,
+    });
+
+    return this as Enemy;
+  }
+
+  /**
+   * Stops an enemy attack sequence by removing the attack timer event and stopping all attack tweens.
+   */
+  stopAttack() {
+    this.attackEvent.remove();
+    this.attackManager.stopAttack();
+  }
+
+  /**
+   * Draw the enemy into the scene.
+   *
+   * @param x horizontal position of the enemy
+   * @param y vertical position of the enemy
+   * @param frame the key for the animation to play
+   */
+  draw(x?: number, y?: number, frame = this.key): typeof this {
+    const xPos = x || 0;
+    const yPos = y || 0;
+    this.sprite.setPosition(xPos, yPos);
+    this.sprite.play(frame);
+    this.sprite.setVisible(true);
+    return this;
+  }
+
+  play(anim: string) {
+    return this.sprite.play(anim);
+  }
+
+  get x() {
+    return this.sprite.x;
+  }
+
+  set x(newX: number) {
+    this.sprite.setX(newX);
+  }
+
+  get y() {
+    return this.sprite.y;
+  }
+
+  set y(newY: number) {
+    this.sprite.setY(newY);
+  }
+
+  /**
+   * Creates a speech bubble around the text that the enemy is speaking.
+   *
+   * @param x horizontal position of the text
+   * @param y vertical position of the text
+   * @returns
+   */
+  private createSpeechBubble(x: number, y: number) {
     const speech = this.speech,
       graphics = this.scene.add.graphics(),
       bounds = this.speech.getBounds();
@@ -113,60 +181,6 @@ export abstract class Enemy {
     speech.setVisible(true);
 
     return this;
-  }
-
-  /**
-   * Default attack sequence. Override for enemy specific attack sequence.
-   * Starts in 1 second and attacke every 3 seconds by default. Loops indefinintely until the attack is stopped.
-   * @returns Enemy
-   */
-  startAttack() {
-    this.attackEvent = this.scene.time.addEvent({
-      startAt: 2000,
-      delay: 3000,
-      loop: true,
-      callback: this.attack,
-      callbackScope: this,
-    });
-
-    return this as Enemy;
-  }
-
-  /**
-   * Stops an enemy attack sequence by removing the attack timer event and stopping all attack tweens.
-   */
-  stopAttack() {
-    this.attackEvent.remove();
-    this.attackManager.stopAttack();
-  }
-
-  draw(x?: number, y?: number, frame = this.key) {
-    const xPos = x || 0;
-    const yPos = y || 0;
-    this.sprite.setPosition(xPos, yPos);
-    this.sprite.play(frame);
-    this.sprite.setVisible(true);
-    return this;
-  }
-
-  play(anim: string) {
-    return this.sprite.play(anim);
-  }
-
-  get x() {
-    return this.sprite.x;
-  }
-
-  set x(newX: number) {
-    this.sprite.setX(newX);
-  }
-
-  get y() {
-    return this.sprite.y;
-  }
-
-  set y(newY: number) {
-    this.sprite.setY(newY);
   }
 }
 
