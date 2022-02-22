@@ -52,39 +52,37 @@ export function LoadableAssets<TBase extends Loadable>(
 
       await loaderPromise;
 
-      this.assets
-        // .map((asset) => asset.animation.key)
-        .forEach((asset) => {
-          let animation = undefined;
-          if (asset.animation) {
-            animation = asset.animation(this.scene);
-          }
+      this.assets.forEach((asset) => {
+        let animation = undefined;
+        if (asset.animation) {
+          animation = asset.animation(this.scene);
+        }
 
-          const key = animation?.key || this.key;
-          if (!key) {
-            throw new Error(
-              "Missing key when loading animations for " + Base.name
-            );
-          }
+        const key = animation?.key || asset.spriteConfig?.key || this.key;
+        if (!key) {
+          throw new Error(
+            "Missing key when loading animations for " + Base.name
+          );
+        }
 
-          this.scene.anims.create({
-            key,
-            frames: this.scene.anims.generateFrameNumbers(key, {
-              frames: [0, 1, 2],
-            }),
-            frameRate: 3,
-            repeat: -1,
-            ...animation,
-          });
-          // } else {
-          //   console.warn(
-          //     "Tried loading another animation for key " +
-          //       key +
-          //       " for asset " +
-          //       Base.name
-          //   );
-          // }
+        this.scene.anims.create({
+          key,
+          frames: this.scene.anims.generateFrameNumbers(key, {
+            frames: [0, 1, 2],
+          }),
+          frameRate: 3,
+          repeat: -1,
+          ...animation,
         });
+        // } else {
+        //   console.warn(
+        //     "Tried loading another animation for key " +
+        //       key +
+        //       " for asset " +
+        //       Base.name
+        //   );
+        // }
+      });
     }
   };
 }
