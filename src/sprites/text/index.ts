@@ -7,8 +7,6 @@ import { scale as baseScale } from "../../scenes/battle/constants";
 
 export class TextSprite {
   text: string;
-  x: number;
-  y: number;
   scale: number;
   tint: number;
   words: any;
@@ -29,23 +27,23 @@ export class TextSprite {
   constructor(
     scene: Phaser.Scene,
     text: string,
-    x = 0,
-    y = 0,
     scale = baseScale,
     tint = 0xffffff,
     curve?: Phaser.Curves.Line
   ) {
     this.text = text;
     this.words = text.split(" ").map((word: string) => word.split(""));
-    this.x = x;
-    this.y = y;
     this.scale = scale;
     this.tint = tint;
+
+    let letterCount = 0;
+    const x = 0;
+    const y = 0;
 
     const containers = this.words.reduce(
       (acc: WordContainer[], letters: string[], currIndex: number) => {
         const path = { t: 0, vec: new Phaser.Math.Vector2() };
-        let textCurve;
+        let textCurve: Phaser.Curves.Line;
 
         if (!curve) {
           const startPoint = new Phaser.Math.Vector2(x, y);
@@ -55,17 +53,24 @@ export class TextSprite {
           textCurve = curve;
         }
 
-        const xPos = textCurve.getPoint(
-          currIndex / this.words.length,
-          path.vec
-        );
-
         const wordContainer = scene.add.container(
-          xPos.x,
-          xPos.y,
+          0,
+          0,
           letters.map((letter, i) => {
+            const letterPos = textCurve.getPoint(
+              letterCount / (text.length - 1),
+              path.vec
+            );
+
+            letterCount += 1;
+
+            // Important for separating words with space
+            if (i === letters.length - 1) {
+              letterCount += 1;
+            }
+
             const sprite = scene.add
-              .sprite(i * (32 * this.scale), 0, "letter_" + letter)
+              .sprite(letterPos.x, letterPos.y, "letter_" + letter)
               .setTint(tint)
               .setVisible(false)
               .setName("letter_" + letter)
@@ -82,11 +87,7 @@ export class TextSprite {
       []
     );
 
-    this.container = scene.add.container(
-      this.x,
-      this.y,
-      containers
-    ) as TextContainer;
+    this.container = scene.add.container(x, y, containers) as TextContainer;
 
     return this;
   }
@@ -244,22 +245,12 @@ register<TextSprite>(
   function (
     this: Phaser.GameObjects.GameObjectFactory,
     text: string,
-    x: number,
-    y: number,
     scale: number,
     tint = 0xffffff,
     curve: Phaser.Curves.Line
   ) {
     const LoadableTextSprite = LoadableAssets(TextSprite, assets, "TextSprite");
-    const sprite = new LoadableTextSprite(
-      this.scene,
-      text,
-      x,
-      y,
-      scale,
-      tint,
-      curve
-    );
+    const sprite = new LoadableTextSprite(this.scene, text, scale, tint, curve);
 
     return sprite;
   },

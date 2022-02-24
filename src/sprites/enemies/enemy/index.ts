@@ -23,6 +23,7 @@ export abstract class Enemy {
   public abstract dialogue: string[];
   public abstract displayName: string;
   public abstract introduction: string[];
+  public abstract description: string;
   public abstract attack(): Enemy;
   public key!: string;
   public speech!: TextSprite;
@@ -41,8 +42,6 @@ export abstract class Enemy {
 
   async speak(
     text = pickRandom(this.dialogue),
-    x = 0,
-    y = 0,
     scale = 1,
     tint = 0xffffff,
     curve?: Phaser.Curves.Curve,
@@ -56,27 +55,20 @@ export abstract class Enemy {
     if (!curve) {
       const startPoint = new Phaser.Math.Vector2(
         enemyBounds.left - 50,
-        enemyBounds.bottom
+        enemyBounds.bottom - 100
       );
       const endPoint = new Phaser.Math.Vector2(
         enemyBounds.right + 200,
-        enemyBounds.bottom
+        enemyBounds.bottom - 100
       );
 
       textCurve = new Phaser.Curves.Line(startPoint, endPoint);
     }
 
-    this.speech = await this.scene.add.textsprite(
-      text,
-      x,
-      y,
-      scale,
-      tint,
-      textCurve
-    );
+    this.speech = await this.scene.add.textsprite(text, scale, tint, textCurve);
 
     if (bubble) {
-      this.createSpeechBubble(x, y);
+      this.createSpeechBubble(0, 0);
     }
 
     return this.speech;
@@ -167,12 +159,10 @@ export abstract class Enemy {
       targets: this.bubbleSprite,
       duration: 250,
       ease: "Cubic",
-      scaleX: Math.floor((bounds.width + 50) / this.bubbleSprite.width),
-      scaleY: Math.floor((bounds.height + 50) / this.bubbleSprite.height),
+      scaleX: Math.floor((bounds.width + 75) / this.bubbleSprite.width),
+      scaleY: Math.floor((bounds.height + 75) / this.bubbleSprite.height),
       x: bounds.centerX,
       y: bounds.centerY,
-      flipX: true,
-      flipY: true,
     });
 
     this.bubbleSprite.mask = graphics.createBitmapMask(speech.container);

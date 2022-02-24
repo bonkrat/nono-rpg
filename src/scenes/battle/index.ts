@@ -123,45 +123,29 @@ export class Battle extends Phaser.Scene {
     );
 
     this.enemy.startAttack();
-    this.time.addEvent({
-      startAt: 2000,
-      delay: 3000,
-      loop: true,
-      callback: this.battleSpeak,
-      callbackScope: this,
-    });
+    // this.time.addEvent({
+    //   startAt: 2000,
+    //   delay: 3000,
+    //   loop: true,
+    //   callback: this.battleSpeak,
+    //   callbackScope: this,
+    // });
   }
 
   /**
    * Displays enemy text during the battle.
    */
   async battleSpeak() {
-    const enemy = this.enemy;
+    const enemy = this.enemy,
+      bounds = enemy.sprite.getBounds(),
+      startX = pickRandom([bounds.left, bounds.right]),
+      startY = pickRandom([bounds.top, bounds.bottom]),
+      startPoint = new Phaser.Math.Vector2(startX, startY),
+      endPoint = new Phaser.Math.Vector2(startX + 200, startY + 25),
+      line = new Phaser.Curves.Line(startPoint, endPoint),
+      randomDialog = pickRandom(this.enemy.dialogue);
 
-    const enemyBounds = enemy.sprite.getBounds();
-    const randomX = pickRandom([
-      enemyBounds.left + 100,
-      enemyBounds.right - 100,
-    ]);
-    const randomY = pickRandom([
-      enemyBounds.top + 100,
-      enemyBounds.bottom - 100,
-    ]);
-    const startPoint = new Phaser.Math.Vector2(0, 0 - 30);
-    const controlPoint1 = new Phaser.Math.Vector2(0 + 50, 0 - 20);
-    const controlPoint2 = new Phaser.Math.Vector2(0 + 100, 0);
-    const endPoint = new Phaser.Math.Vector2(0 - 50, 0 + 20);
-
-    const curve = new Phaser.Curves.CubicBezier(
-      startPoint,
-      controlPoint1,
-      controlPoint2,
-      endPoint
-    );
-
-    const randomDialog = pickRandom(this.enemy.dialogue);
-
-    enemy.speak(randomDialog, randomX, randomY, 0.75, 0x000000, curve, true);
+    enemy.speak(randomDialog, 0.5, 0x000000, line, true);
   }
 
   handlePuzzleUpdate() {
@@ -300,12 +284,13 @@ export class Battle extends Phaser.Scene {
                   // If the current puzzle section is the last piece of the larger image
                   if (currentPuzzleSection === puzzleLength - 1) {
                     minigrid.setVisible(false);
-                    this.add.textsprite(
-                      puzzleName,
-                      minigrid.x + minigrid.x / 4,
-                      minigrid.y - 32 + 32 / 2,
-                      scale / 4
-                    );
+                    // TODO create a curve for this
+                    // this.add.textsprite(
+                    //   puzzleName,
+                    //   minigrid.x + minigrid.x / 4,
+                    //   minigrid.y - 32 + 32 / 2,
+                    //   scale / 4
+                    // );
                   }
 
                   this.nonogramSound.play();

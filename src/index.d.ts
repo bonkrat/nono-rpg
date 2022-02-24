@@ -56,6 +56,8 @@ interface EnemyClass {
   puzzleSet: PuzzleSet;
   id: string;
   displayName: string;
+  introduction: string[];
+  description: string;
 }
 
 declare namespace Phaser.GameObjects {
@@ -72,8 +74,6 @@ declare namespace Phaser.GameObjects {
     player(x: number, y: number): Player;
     textsprite(
       text: string,
-      x?: number,
-      y?: number,
       scale?: number,
       tint?: number,
       curve?: Phaser.Curves.Curve

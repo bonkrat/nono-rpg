@@ -8,9 +8,10 @@ export class Karen extends Enemy {
   static assets = [
     { url: karen, frameConfig: { frameWidth: 128, frameHeight: 182 } },
   ];
-  displayName = "Karen";
-  dialogue = ["foobar baz biz", "baz qix "];
-  introduction = ["Foobar baz qix", "baz qix foobar", "get a job"];
+  displayName = "Meddlesome Lady";
+  description = "Probably speaking to a manager";
+  introduction = ["You cant find good help these days"];
+  dialogue = ["Foobar baz qix", "baz qix foobar", "get a job"];
 
   constructor(scene: Phaser.Scene) {
     super(scene);
