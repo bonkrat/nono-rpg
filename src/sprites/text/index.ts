@@ -41,7 +41,7 @@ export class TextSprite {
     const y = 0;
 
     const containers = this.words.reduce(
-      (acc: WordContainer[], letters: string[], currIndex: number) => {
+      (acc: WordContainer[], letters: string[]) => {
         const path = { t: 0, vec: new Phaser.Math.Vector2() };
         let textCurve: Phaser.Curves.Line;
 

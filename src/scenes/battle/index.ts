@@ -262,8 +262,8 @@ export class Battle extends Phaser.Scene {
                 1500,
                 (
                   currentPuzzleSection: number,
-                  puzzleLength: number,
-                  puzzleName: string
+                  puzzleLength: number
+                  // puzzleName: string
                 ) => {
                   const offset = 2;
                   if (currentPuzzleSection > 0) {

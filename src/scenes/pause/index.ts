@@ -24,9 +24,7 @@ export class Pause extends Phaser.Scene {
   async create() {
     await this.add.textsprite("Paused", scale);
 
-    this.settings.forEach(async (setting: Setting<any>, index: number) => {
-      const x = 100;
-      const y = 200 + (index + 1) * 32 * scale;
+    this.settings.forEach(async (setting: Setting<any>) => {
       const settingText = await this.add.textsprite(setting.text, scale / 2);
       this.settingState[setting.text] = setting.value;
 

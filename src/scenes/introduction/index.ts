@@ -1,5 +1,4 @@
 import { Enemy } from "../../sprites/enemies/enemy";
-import { pickRandom } from "../../utils";
 import { height, width } from "../battle/constants";
 
 export class Introduction extends Phaser.Scene {
