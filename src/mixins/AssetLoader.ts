@@ -1,3 +1,5 @@
+import { logger } from "../utils";
+
 export function LoadableAssets<TBase extends Loadable>(
   Base: TBase,
   assets: {
@@ -28,6 +30,12 @@ export function LoadableAssets<TBase extends Loadable>(
             if (failed) {
               reject();
             }
+            this.debug(
+              "LOAD ASSETS",
+              "Promise fulfilled for this many assets: ",
+              _complete
+            );
+
             resolve();
           }
         );
@@ -38,7 +46,9 @@ export function LoadableAssets<TBase extends Loadable>(
         const key = spriteConfig?.key || this.key;
 
         if (key) {
+          this.debug("LOAD ASSETS", "key: ", key);
           if (!this.scene.textures.exists(key)) {
+            this.debug("LOAD ASSETS", "loading asset: ", asset);
             this.scene.load.spritesheet({
               frameConfig: { frameWidth: 32 },
               key,
@@ -50,9 +60,25 @@ export function LoadableAssets<TBase extends Loadable>(
         }
       });
 
+      this.debug("LOAD ASSETS", "STARTING...");
       this.scene.load.start();
+      this.debug(
+        "LOAD ASSETS",
+        "loader state",
+        this.scene.load.state ? "RUNNING" : "NOT RUNNING"
+      );
+
+      if (this.scene.load.totalToLoad) {
+        this.debug(
+          "LOAD ASSETS",
+          "total loading: ",
+          this.scene.load.totalToLoad
+        );
+      }
 
       await loaderPromise;
+
+      this.debug("LOAD ASSETS", "FINISHED!");
 
       this.assets.forEach((asset) => {
         let animation = undefined;
@@ -80,7 +106,12 @@ export function LoadableAssets<TBase extends Loadable>(
           };
         }
 
-        this.scene.anims.create(animation);
+        if (!this.scene.anims.get(key)) {
+          this.debug("LOAD ANIMATION", "animation created", animation);
+
+          this.scene.anims.create(animation);
+        }
+
         // } else {
         //   console.warn(
         //     "Tried loading another animation for key " +
@@ -89,6 +120,16 @@ export function LoadableAssets<TBase extends Loadable>(
         //       Base.name
         //   );
         // }
+      });
+    }
+
+    private debug(action: string, message: string, data?: any) {
+      logger.debug({
+        name: "AssetLoader",
+        action,
+        message,
+        timestamp: true,
+        data,
       });
     }
   };

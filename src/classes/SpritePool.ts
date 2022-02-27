@@ -1,3 +1,5 @@
+import { logger } from "../utils";
+
 /**
  * Allows you to reuse sprites from a pool for memory effeciency.
  */
@@ -22,16 +24,15 @@ export class SpritePool<T extends Phaser.GameObjects.Sprite> extends Phaser
 
   release(s: T) {
     this.killAndHide(s);
-    console.log(
-      "[RELEASE] pool size: " + this.getMatching("active", false).length
-    );
+
+    this.log("RELEASE", "pool size", this.getMatching("active", false).length);
   }
 
   getOne(x: number, y: number): T {
     const s = this.getFirst(false) as T;
 
     if (!s) {
-      console.log("[CREATE] pool size: " + (this.getLength() + 1));
+      this.log("CREATE", "pool size", this.getLength() + 1);
       return this.create(x, y);
     }
 
@@ -39,8 +40,12 @@ export class SpritePool<T extends Phaser.GameObjects.Sprite> extends Phaser
     s.setVisible(true);
     s.setActive(true);
 
-    console.log("[RESUSE] pool size: " + this.getLength());
+    this.log("RESUSE", " pool size", this.getLength());
 
     return s;
+  }
+
+  private log(action: string, message: string, data: any) {
+    logger.debug({ name: "SpriteLoader", action, message, data });
   }
 }
