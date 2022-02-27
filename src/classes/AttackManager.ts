@@ -1,28 +1,17 @@
 import { Battle } from "../scenes/battle";
 import { scale } from "../scenes/battle/constants";
 import { Cell } from "../sprites";
-import { SpritePool } from "./SpritePool";
 
 /**
  * Provides methods for animating attacks and dealing damage.
  */
 export class AttackManager {
-  scene: any;
+  scene: Battle;
   attackTint = 0x7a59ba;
   tweens = [] as Phaser.Tweens.Tween[];
-  flames: SpritePool;
 
   constructor(scene: Battle) {
     this.scene = scene;
-
-    const maxSize =
-      scene.nonogram?.nonogramData.width *
-        scene.nonogram?.nonogramData.height || 25;
-
-    this.flames = new SpritePool(scene, {
-      defaultKey: "flamecell",
-      maxSize,
-    });
   }
 
   setAttackTint(attackTint: number) {
@@ -82,10 +71,14 @@ export class AttackManager {
         cell.setAlpha(value);
       },
       onComplete: () => {
-        const flame = this.flames.addSprite(0, 0);
+        const flame = this.addFlame(
+          cell.getBounds().centerX,
+          cell.getBounds().centerY - 20
+        );
 
         flame
-          ?.setPosition(cell.getBounds().centerX, cell.getBounds().centerY - 20)
+          .setName("flamecell")
+          .setVisible(false)
           .setScale(scale * 1.5)
           .setTint(this.attackTint)
           .play("flamecell");
@@ -101,7 +94,7 @@ export class AttackManager {
             scale: scale,
             ease: "Power2",
             onStart: () => {
-              flame?.setVisible(true);
+              flame.setVisible(true);
             },
             onUpdate: () => {
               if (
@@ -115,7 +108,7 @@ export class AttackManager {
             onComplete: (_tween, targets) => {
               cell.setTint(originalTints);
               cell.setAlpha(originalAlphas);
-              targets[0].destroy();
+              this.releaseFlame(targets[0]);
             },
           })
         );
@@ -132,6 +125,18 @@ export class AttackManager {
       tween.remove();
     });
     this.tweens = [];
-    this.flames.killAndHideAll();
+    this.releaseAll();
+  }
+
+  private releaseAll() {
+    this.scene.spritepool.releaseAll("name", "flamecell");
+  }
+
+  private releaseFlame(s: Phaser.GameObjects.Sprite) {
+    this.scene.spritepool.release(s);
+  }
+
+  private addFlame(x: number, y: number) {
+    return this.scene.spritepool.get(x, y);
   }
 }

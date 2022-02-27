@@ -1,53 +1,46 @@
 /**
  * Allows you to reuse sprites from a pool for memory effeciency.
- *
- * maxSize and defaultKey are required in the config
  */
-export class SpritePool extends Phaser.GameObjects.Group {
-  constructor(
-    scene: Phaser.Scene,
-    config: RequireAtLeast<
-      Phaser.Types.GameObjects.Group.GroupConfig,
-      "maxSize" | "defaultKey"
-    >,
-    children?:
-      | Phaser.GameObjects.GameObject[]
-      | Phaser.Types.GameObjects.Group.GroupConfig
-      | Phaser.Types.GameObjects.Group.GroupCreateConfig
-  ) {
-    super(scene, children, config);
+export class SpritePool<T extends Phaser.GameObjects.Sprite> extends Phaser
+  .GameObjects.Group {
+  constructor(scene: Phaser.Scene, classType: SpriteClass<T>) {
+    super(scene);
 
-    this.createMultiple({
-      active: false,
-      visible: false,
-      key: this.defaultKey,
-      repeat: this.maxSize - 1,
-    });
-
+    this.classType = classType || Phaser.GameObjects.Sprite;
     return this;
   }
 
-  activateSprite(s: Phaser.GameObjects.Sprite) {
-    s.setActive(true);
-    return s;
+  releaseAll(property?: string, value?: any) {
+    if (property && value) {
+      this.getMatching(property, value)
+        .filter((s) => s.active)
+        .forEach((s) => this.release(s));
+    } else {
+    }
+    this.getMatching("active", true).forEach((s) => this.release(s));
   }
 
-  removeSprite(s: Phaser.GameObjects.Sprite) {
+  release(s: T) {
     this.killAndHide(s);
+    console.log(
+      "[RELEASE] pool size: " + this.getMatching("active", false).length
+    );
   }
 
-  killAndHideAll() {
-    this.getChildren().forEach((s) => this.killAndHide(s));
-  }
-
-  addSprite(x: number, y: number) {
-    const s = this.get(x, y);
+  getOne(x: number, y: number): T {
+    const s = this.getFirst(false) as T;
 
     if (!s) {
-      console.warn("Already at max amount of " + this.defaultKey + " sprites!");
-      return;
+      console.log("[CREATE] pool size: " + (this.getLength() + 1));
+      return this.create(x, y);
     }
 
-    return this.activateSprite(s);
+    s.setPosition(x, y);
+    s.setVisible(true);
+    s.setActive(true);
+
+    console.log("[RESUSE] pool size: " + this.getLength());
+
+    return s;
   }
 }

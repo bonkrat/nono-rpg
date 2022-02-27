@@ -24,11 +24,9 @@ export class Nonogram {
     let cells: Cell[][] = [];
     times(this.nonogramData.height, (i) => {
       times(this.nonogramData.width, (j) => {
-        const cell = scene.add.cell(
-          32 * i * this.scale,
-          32 * j * this.scale,
-          this.scale
-        );
+        const cell = scene.add
+          .cell(32 * i * this.scale, 32 * j * this.scale)
+          .setScale(this.scale);
         if (!cells[j]) {
           cells[j] = [];
         }

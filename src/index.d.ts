@@ -60,27 +60,37 @@ interface EnemyClass {
   description: string;
 }
 
-declare namespace Phaser.GameObjects {
-  interface GameObjectFactory {
-    nonogram(
-      nonogramData: NonogramData,
-      scale: number
-    ): import("./sprites/nonogram").Nonogram;
-    cell(x: number, y: number, scale?: number): Cell;
-    healthbar(x: number, y: number, healthAmount: number): HealthBar;
-    healthcap(x: number, y: number): HealthCap;
-    healthchunk(x: number, y: number): HealthChunk;
-    minigrid(x: number, y: number, puzzle: Puzzle, scale: number): MiniGrid;
-    player(x: number, y: number): Player;
-    textsprite(
-      text: string,
-      scale?: number,
-      tint?: number,
-      curve?: Phaser.Curves.Curve
-    ): Promise<import("./sprites/text").TextSprite>;
-    enemy(
-      EnemyClass: EnemyClass
-    ): Promise<import("./sprites/enemies/enemy").Enemy>;
+interface SpriteClass<T extends Phaser.GameObjects.Sprite> {
+  new (...params: ConstructorParameters<T>): T;
+}
+
+declare module Phaser {
+  export interface Scene {
+    spritepool: import("./plugins/SpritePoolScenePlugin").SpritePoolScenePlugin;
+  }
+
+  declare module GameObjects {
+    export interface GameObjectFactory {
+      nonogram(
+        nonogramData: NonogramData,
+        scale: number
+      ): import("./sprites/nonogram").Nonogram;
+      cell(x: number, y: number, scale?: number): Cell;
+      healthbar(x: number, y: number, healthAmount: number): HealthBar;
+      healthcap(x: number, y: number): HealthCap;
+      healthchunk(x: number, y: number): HealthChunk;
+      minigrid(x: number, y: number, puzzle: Puzzle, scale: number): MiniGrid;
+      player(x: number, y: number): Player;
+      textsprite(
+        text: string,
+        scale?: number,
+        tint?: number,
+        curve?: Phaser.Curves.Curve
+      ): Promise<import("./sprites/text").TextSprite>;
+      enemy(
+        EnemyClass: EnemyClass
+      ): Promise<import("./sprites/enemies/enemy").Enemy>;
+    }
   }
 }
 

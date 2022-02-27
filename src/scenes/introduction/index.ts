@@ -22,7 +22,7 @@ export class Introduction extends Phaser.Scene {
 
   async create() {
     (await this.enemy).draw(width / 2, height / 2);
-    this.drawNameText();
+    await this.drawNameText();
     this.createKeys();
     this.drawDescription();
     this.speakIntro();
@@ -57,7 +57,7 @@ export class Introduction extends Phaser.Scene {
         315
       );
 
-    this.add.textsprite(enemy.displayName, 2.5, 0xabcdef, curve);
+    await this.add.textsprite(enemy.displayName, 2.5, 0xabcdef, curve);
   }
 
   /**

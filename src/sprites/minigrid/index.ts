@@ -26,11 +26,8 @@ export class MiniGrid extends Phaser.GameObjects.Container {
           (row, x) => {
             return row.map((_c, y) => {
               const s = scene.add
-                .cell(
-                  y * 32 * this.cellScale,
-                  x * 32 * this.cellScale,
-                  this.cellScale
-                )
+                .cell(y * 32 * this.cellScale, x * 32 * this.cellScale)
+                .setScale(this.cellScale)
                 .setOrigin(0, 0)
                 .playEmptyAnimation();
 
@@ -43,6 +40,12 @@ export class MiniGrid extends Phaser.GameObjects.Container {
       this.add(grid);
       this.setAlpha(0.5);
     }
+  }
+
+  clean() {
+    (super.getAll() as Cell[]).forEach((s) =>
+      this.scene.spritepool.release(s, Cell)
+    );
   }
 
   getAt(index: number): Cell {

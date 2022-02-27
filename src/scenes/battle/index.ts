@@ -11,7 +11,7 @@ import {
   emptyHealthCap,
 } from "../../assets/sprites";
 import { CellState } from "../../common";
-import { HealthBar, Player, Nonogram, MiniGrid } from "../../sprites";
+import { HealthBar, Player, Nonogram, MiniGrid, Cell } from "../../sprites";
 import enemies from "../../sprites/enemies";
 import { Enemy } from "../../sprites/enemies/enemy";
 import { width, scale, height } from "./constants";
@@ -236,7 +236,7 @@ export class Battle extends Phaser.Scene {
           );
 
           nonogram.getAll().forEach((c) => {
-            c.state !== CellState.selected && c.destroy();
+            c.state !== CellState.selected && this.spritepool.release(c, Cell);
           });
 
           this.tweens.add({
@@ -283,7 +283,8 @@ export class Battle extends Phaser.Scene {
 
                   // If the current puzzle section is the last piece of the larger image
                   if (currentPuzzleSection === puzzleLength - 1) {
-                    minigrid.setVisible(false);
+                    minigrid.clean();
+
                     // TODO create a curve for this
                     // this.add.textsprite(
                     //   puzzleName,

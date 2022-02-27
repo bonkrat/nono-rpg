@@ -2,19 +2,14 @@ import { shuffle } from "lodash";
 import Phaser from "phaser";
 import { CellState } from "../../common";
 import { Battle } from "../../scenes/battle";
-import { scale as defaultScale } from "../../scenes/battle/constants";
 
 export class Cell extends Phaser.GameObjects.Sprite {
   selectSound: any;
-  baseScale: number;
 
-  constructor(scene: Battle, x: number, y: number, scale = defaultScale) {
+  constructor(scene: Battle, x: number, y: number) {
     super(scene, x, y, "cell");
     this.type = "Cell";
-    this.baseScale = scale;
     this.selectSound = this.scene.sound.add("cellSelected", { volume: 0.5 });
-
-    this.setScale(scale);
   }
 
   fillCell() {
@@ -69,14 +64,14 @@ export class Cell extends Phaser.GameObjects.Sprite {
     this.play(this.getSelectedAnimation());
     this.setAlpha(1);
     this.setCrop(0, 0, 32, 32);
-    this.setScale(this.baseScale);
+    this.setScale(this.scale);
   }
 
   setCellEmptyStyles() {
     this.setState(CellState.empty);
     this.setCrop(0, 0, 32, 32);
     this.setAlpha(1);
-    this.setScale(this.baseScale);
+    this.setScale(this.scale);
     this.play(this.getEmptyAnimation());
   }
 
@@ -84,13 +79,13 @@ export class Cell extends Phaser.GameObjects.Sprite {
     this.play(this.getSelectedAnimation());
     this.setCrop(1, 1, 30, 30);
     this.setAlpha(0.8);
-    this.setScale(this.baseScale * 0.8);
+    this.setScale(this.scale * 0.8);
   }
 
   setCellDisabledStyles() {
     this.setState(CellState.disabled);
     this.setCrop(1, 1, 30, 30);
-    this.setScale(this.baseScale * 0.8);
+    this.setScale(this.scale * 0.8);
     this.play(this.getEmptyAnimation()).setAlpha(0.3);
   }
 
@@ -115,13 +110,9 @@ export class Cell extends Phaser.GameObjects.Sprite {
 
 Phaser.GameObjects.GameObjectFactory.register(
   "cell",
-  function (
-    this: Phaser.GameObjects.GameObjectFactory,
-    x: number,
-    y: number,
-    scale: number
-  ) {
-    const cell = new Cell(this.scene as Battle, x, y, scale);
+  function (this: Phaser.GameObjects.GameObjectFactory, x: number, y: number) {
+    const cell = this.scene.spritepool.get(x, y, Cell);
+
     for (var i = 0; i < 5; i++) {
       this.scene.anims.create({
         key: "empty_" + i,
