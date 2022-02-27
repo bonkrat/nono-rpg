@@ -18,29 +18,43 @@ export function LoadableAssets<TBase extends Loadable>(
       this.scene = args[0];
     }
 
-    async loadAssets() {
-      const loaderPromise = new Promise<void>((resolve, reject) => {
-        this.scene.load.on(
-          "complete",
-          (
-            _loader: typeof Phaser.Loader,
-            _complete: number,
-            failed: number
-          ) => {
-            if (failed) {
-              reject();
-            }
-            this.debug(
-              "LOAD ASSETS",
-              "Promise fulfilled for this many assets: ",
-              _complete
-            );
+    fileCompletePromise(key: string) {
+      return new Promise<void>((resolve) => {
+        this.scene.load.on("filecomplete-spritesheet-" + key, () => {
+          this.debug(
+            "LOAD ASSETS",
+            "filecomplete-" + key + " promise complete"
+          );
 
-            resolve();
-          }
-        );
+          resolve();
+        });
       });
+    }
 
+    async loadAssets() {
+      // const loaderPromise = new Promise<void>((resolve, reject) => {
+      //   this.scene.load.on(
+      //     "complete",
+      //     (
+      //       _loader: typeof Phaser.Loader,
+      //       _complete: number,
+      //       failed: number
+      //     ) => {
+      //       if (failed) {
+      //         reject();
+      //       }
+      //       this.debug(
+      //         "LOAD ASSETS",
+      //         "Promise fulfilled for this many assets: ",
+      //         _complete
+      //       );
+
+      //       resolve();
+      //     }
+      //   );
+      // });
+
+      const promises = [] as Promise<void>[];
       this.assets.forEach(async (asset) => {
         const spriteConfig = asset.spriteConfig;
         const key = spriteConfig?.key || this.key;
@@ -54,6 +68,7 @@ export function LoadableAssets<TBase extends Loadable>(
               key,
               ...asset?.spriteConfig,
             });
+            promises.push(this.fileCompletePromise(key));
           }
         } else {
           throw new Error("Missing key when loading assets for " + Base.name);
@@ -62,11 +77,6 @@ export function LoadableAssets<TBase extends Loadable>(
 
       this.debug("LOAD ASSETS", "STARTING...");
       this.scene.load.start();
-      this.debug(
-        "LOAD ASSETS",
-        "loader state",
-        this.scene.load.state ? "RUNNING" : "NOT RUNNING"
-      );
 
       if (this.scene.load.totalToLoad) {
         this.debug(
@@ -76,7 +86,7 @@ export function LoadableAssets<TBase extends Loadable>(
         );
       }
 
-      await loaderPromise;
+      await Promise.all(promises);
 
       this.debug("LOAD ASSETS", "FINISHED!");
 
