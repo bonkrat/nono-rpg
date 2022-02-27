@@ -170,6 +170,15 @@ export class TextSprite {
   }
 
   /**
+   * Map over all of the letters
+   */
+  mapLetters(
+    callbackFn: (l: Phaser.GameObjects.Sprite) => Phaser.GameObjects.Sprite
+  ) {
+    return this.getLetters().map(callbackFn);
+  }
+
+  /**
    * Offset the text containers from their original position.
    *
    * @param x the amount to offset horizontally

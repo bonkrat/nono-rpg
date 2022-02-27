@@ -1,4 +1,5 @@
 import { Enemy } from "../../sprites/enemies/enemy";
+import { TextSprite } from "../../sprites/text";
 import { height, width } from "../battle/constants";
 
 export class Introduction extends Phaser.Scene {
@@ -22,8 +23,8 @@ export class Introduction extends Phaser.Scene {
 
   async create() {
     (await this.enemy).draw(width / 2, height / 2);
-    await this.drawNameText();
     this.createKeys();
+    this.drawNameText();
     this.drawDescription();
     this.speakIntro();
   }
@@ -39,7 +40,17 @@ export class Introduction extends Phaser.Scene {
       endPoint = new Phaser.Math.Vector2(width - 200, bounds.bottom + 50),
       line = new Phaser.Curves.Line(startPoint, endPoint);
 
-    enemy.speak(text, 0.75, 0xffffff, line);
+    await enemy.speak(text, 0.75, undefined, line);
+    this.staggerText(enemy.speech, 250);
+    this.add.tween({
+      targets: enemy.speech.getLetters(),
+      y: "+=10",
+      ease: "Power2",
+      delay: this.tweens.stagger(100, {}),
+      duration: 500,
+      yoyo: true,
+      repeat: -1,
+    });
   }
 
   /**
@@ -57,7 +68,9 @@ export class Introduction extends Phaser.Scene {
         315
       );
 
-    await this.add.textsprite(enemy.displayName, 2.5, 0xabcdef, curve);
+    this.staggerText(
+      await this.add.textsprite(enemy.displayName, 2.5, 0xabcdef, curve)
+    );
   }
 
   /**
@@ -75,28 +88,27 @@ export class Introduction extends Phaser.Scene {
         300
       );
 
-    await enemy.speak(enemy.description, 0.5, undefined, curve);
+    this.staggerText(
+      await this.add.textsprite(enemy.description, 0.5, undefined, curve),
+      500
+    );
+  }
 
-    enemy.speech.map((s) => s.setAlpha(0));
-
-    const targets = enemy.speech.getLetters();
-
-    this.add.tween({
-      targets,
-      alpha: 1,
-      ease: "Stepped",
-      delay: this.tweens.stagger(75, {}),
-      duration: 500,
-    });
-
-    this.add.tween({
-      targets,
-      y: "+=10",
-      ease: "Power2",
-      delay: this.tweens.stagger(100, {}),
-      duration: 500,
-      yoyo: true,
-      repeat: -1,
+  /**
+   * Prints each letter of the text at a staggered delay.
+   * @param text text to print
+   * @param delay time to delay over in milliseconds
+   */
+  private staggerText(text: TextSprite, delay = 0) {
+    const targets = text.mapLetters((l) => l.setAlpha(0));
+    this.time.delayedCall(delay, () => {
+      this.add.tween({
+        targets,
+        alpha: 1,
+        ease: "Stepped",
+        delay: this.tweens.stagger(75, {}),
+        duration: 500,
+      });
     });
   }
 
