@@ -19,81 +19,95 @@ export function LoadableAssets<TBase extends Loadable>(
     }
 
     async loadAssets() {
-      const promises = [] as Promise<void>[];
+      const promises = new Map<string, Promise<void>>();
+
       this.assets.forEach(async (asset) => {
         const spriteConfig = asset.spriteConfig;
         const key = spriteConfig?.key || this.key;
 
         if (key) {
-          this.debug("LOAD ASSETS", "key: ", key);
-          if (!this.scene.textures.exists(key)) {
-            this.debug("LOAD ASSETS", "loading asset: ", asset);
+          if (!this.scene.textures.exists(key) && !promises.has(key)) {
+            this.debug(
+              "LOAD FILES",
+              "loading sprite file for: ",
+              asset.spriteConfig
+            );
             this.scene.load.spritesheet({
               frameConfig: { frameWidth: 32 },
               key,
               ...asset?.spriteConfig,
             });
-            promises.push(this.fileCompletePromise(key));
+            promises.set(key, this.fileCompletePromise(key));
           }
         } else {
           throw new Error("Missing key when loading assets for " + Base.name);
         }
       });
 
-      this.debug("LOAD ASSETS", "STARTING...");
-      this.scene.load.start();
+      if (promises.size) {
+        this.scene.load.start();
 
-      if (this.scene.load.totalToLoad) {
+        this.debug(
+          "LOAD FILES",
+          "Loading " + this.scene.load.totalToLoad + " files for " + Base.name,
+          this.assets
+        );
+
+        for (const [_key, promise] of promises) {
+          await promise;
+        }
+
+        this.debug("LOAD ASSETS", "loading assets complete", Base.name);
+
+        this.assets.forEach((asset) => {
+          let animation = undefined;
+          let key = asset.spriteConfig?.key || this.key;
+
+          if (!key) {
+            if (!key) {
+              throw new Error(
+                "Missing key when loading animations for " + Base.name
+              );
+            }
+          }
+
+          if (asset.animation) {
+            animation = asset.animation(this.scene);
+            key = animation.key || key;
+          } else {
+            animation = {
+              key,
+              frames: this.scene.anims.generateFrameNumbers(key, {
+                frames: [0, 1, 2],
+              }),
+              frameRate: 3,
+              repeat: -1,
+            };
+          }
+
+          if (!this.scene.anims.get(key)) {
+            this.debug("LOAD ANIMATION", "animation created", animation);
+
+            this.scene.anims.create(animation);
+          }
+        });
+
         this.debug(
           "LOAD ASSETS",
-          "total loading: ",
-          this.scene.load.totalToLoad
+          "Files and animations loaded for " + Base.name
+        );
+      } else {
+        this.debug(
+          "LOAD ASSET",
+          "skip loading files and animations for: ",
+          Base.name
         );
       }
-
-      await Promise.all(promises);
-
-      this.debug("LOAD ASSETS", "FINISHED!");
-
-      this.assets.forEach((asset) => {
-        let animation = undefined;
-        let key = asset.spriteConfig?.key || this.key;
-
-        if (!key) {
-          if (!key) {
-            throw new Error(
-              "Missing key when loading animations for " + Base.name
-            );
-          }
-        }
-
-        if (asset.animation) {
-          animation = asset.animation(this.scene);
-          key = animation.key || key;
-        } else {
-          animation = {
-            key,
-            frames: this.scene.anims.generateFrameNumbers(key, {
-              frames: [0, 1, 2],
-            }),
-            frameRate: 3,
-            repeat: -1,
-          };
-        }
-
-        if (!this.scene.anims.get(key)) {
-          this.debug("LOAD ANIMATION", "animation created", animation);
-
-          this.scene.anims.create(animation);
-        }
-      });
     }
 
     private fileCompletePromise(key: string) {
       return new Promise<void>((resolve) => {
         this.scene.load.on("filecomplete-spritesheet-" + key, () => {
-          this.debug("LOAD ASSETS", "loading asset " + key + " complete.");
-
           resolve();
         });
       });

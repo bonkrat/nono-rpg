@@ -69,11 +69,17 @@ export class TextSprite {
               letterCount += 1;
             }
 
-            const sprite = scene.add
-              .sprite(letterPos.x, letterPos.y, "letter_" + letter)
+            // const sprite = scene.add.sprite(
+            //   letterPos.x,
+            //   letterPos.y,
+            //   "letter_" + letter
+            // );
+            const sprite = scene.spritepool
+              .get(letterPos.x, letterPos.y)
+              .setTexture("letter_" + letter)
+              .setName("letter_" + letter)
               .setTint(tint)
               .setVisible(false)
-              .setName("letter_" + letter)
               .setScale(this.scale);
 
             return sprite;
