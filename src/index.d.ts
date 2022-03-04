@@ -1,5 +1,7 @@
+type PNG = string;
+
 declare module "*.png" {
-  const value: any;
+  const value: PNG;
   export default value;
 }
 
@@ -46,18 +48,23 @@ type BattleKeys = {
   [s in PlayerInput as string]: BattleKey;
 };
 
-interface EnemyClass {
-  new (
-    ...params: ConstructorParameters<
-      typeof import("./sprites/enemies/enemy").Enemy
-    >
-  ): import("./sprites/enemies/enemy").Enemy;
+type Constructor<T, P = any> = new (...params: P) => T;
+
+interface EnemyClass
+  extends Constructor<
+    import("./sprites/enemies/enemy").Enemy,
+    ConstructorParameters<typeof import("./sprites/enemies/enemy").Enemy>
+  > {
   assets: Partial<Phaser.Types.Loader.FileTypes.SpriteSheetFileConfig>[];
   puzzleSet: PuzzleSet;
-  id: string;
   displayName: string;
   introduction: string[];
   description: string;
+  dialogue: string[];
+}
+
+interface MobConfig extends Omit<EnemyClass, Constructor<EnemyClass>> {
+  attack(): Enemy;
 }
 
 interface SpriteClass<T extends Phaser.GameObjects.Sprite> {

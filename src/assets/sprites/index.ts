@@ -9,6 +9,7 @@ import numbers from "./numbers.png";
 import player from "./player.png";
 import bubble from "./bubble.png";
 import flamecell from "./flame_cell.png";
+import { mobs } from "./enemies/mobs";
 
 export {
   cell,
@@ -22,4 +23,5 @@ export {
   player,
   bubble,
   flamecell,
+  mobs,
 };
