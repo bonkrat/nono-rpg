@@ -10,3 +10,10 @@
 * Disabled cell tint/alpha is wrong sometimes
 * Fix battleSpeak in Battle scene
 * Fix gameover screen
+
+# Game Loop
+1. 3 rounds
+2. Each round has 3 basic mobs and 1 boss
+3. Basic mobs are one puzzle at (5 x levelnum) ^ 2
+4. Basic mobs do increasingly faster attacks
+5. Boss does a complicated pattern with 3 puzzles
