@@ -142,7 +142,7 @@ export class TextSprite {
    */
   map(...args: Parameters<TextSprite["forEach"]>): Phaser.GameObjects.Sprite[] {
     this.forEach(...args);
-    return letters;
+    return this.getLetters();
   }
 
   /**
