@@ -25,6 +25,7 @@ export abstract class Enemy {
   public abstract introduction: string[];
   public abstract description: string;
   public abstract attack(): Enemy;
+  public type?: string;
   public key!: string;
   public speech!: TextSprite;
   public sprite: Phaser.GameObjects.Sprite;

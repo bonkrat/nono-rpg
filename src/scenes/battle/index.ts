@@ -12,13 +12,13 @@ import {
 } from "../../assets/sprites";
 import { CellState } from "../../common";
 import { HealthBar, Player, Nonogram, MiniGrid, Cell } from "../../sprites";
-import enemies from "../../sprites/enemies";
 import { Enemy } from "../../sprites/enemies/enemy";
 import { width, scale, height } from "./constants";
 import "../../sprites";
 import cellSound from "../../assets/sounds/cell.mp3";
 import nonogramSound from "../../assets/sounds/nonogram.mp3";
 import { pickRandom } from "../../utils";
+import { ACTIONS } from "../../plugins/GameStatePlugin";
 
 const NONOGRAM_SCALE = 2.25;
 
@@ -339,14 +339,19 @@ export class Battle extends Phaser.Scene {
     this.completedPuzzles.push(this.currentPuzzleIndex);
 
     if (this.completedPuzzles.length === this.puzzleSet.length) {
+      // Go to next enemy.
       this.player.setVisible(false);
 
       this.time.delayedCall(4000, () => {
-        this.scene.restart({
-          enemyClass: shuffle(enemies).filter((e) => {
-            return e.name !== this.enemy.constructor.name;
-          })[0],
+        this.gamestate.dispatch(ACTIONS.ENEMY_DEFEATED);
+        // this.scene.restart({
+        //   enemyClass: this.gamestate.currentEnemy,
+        //   duration: 0,
+        // });
+        this.scene.transition({
+          target: "Controller",
           duration: 0,
+          remove: true,
         });
       });
     } else {

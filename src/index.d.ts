@@ -28,7 +28,7 @@ interface Puzzle {
   puzzles: NonogramData[];
 }
 
-type PuzzleSet = Puzzle[];
+type PuzzleSet = [Puzzle, ...Puzzle[]];
 
 interface Coordinates {
   x: number;
@@ -61,6 +61,7 @@ interface EnemyClass
   introduction: string[];
   description: string;
   dialogue: string[];
+  type?: string;
 }
 
 interface MobConfig extends Omit<EnemyClass, Constructor<EnemyClass>> {
@@ -74,6 +75,7 @@ interface SpriteClass<T extends Phaser.GameObjects.Sprite> {
 declare module Phaser {
   export interface Scene {
     spritepool: import("./plugins/SpritePoolScenePlugin").SpritePoolScenePlugin;
+    gamestate: import("./plugins/GameStatePlugin").GameStatePlugin;
   }
 
   declare module GameObjects {
@@ -117,3 +119,21 @@ interface Container<T> extends Phaser.GameObjects.Container {
 
 type WordContainer = Container<Phaser.GameObjects.Sprite>;
 type TextContainer = Container<WordContainer>;
+
+interface GameRound {
+  enemies: EnemyClass[];
+}
+
+interface GameState {
+  rounds: GameRound[];
+  roundNum: number;
+  enemyNum: number;
+}
+
+interface GameStateMap
+  extends Map<keyof GameState, GameState[keyof GameState]> {
+  get<T extends keyof GameState>(key: T): GameState[T];
+  set<T extends keyofGameState>(key: T, value: GameState[T]): GameState[T];
+}
+
+type GetGameStateReturnValue<T> = T extends any[] ? GameState : GameState[T];
