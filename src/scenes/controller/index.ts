@@ -12,6 +12,7 @@ export class Controller extends Phaser.Scene {
         break;
       case STATUS.LOST:
         this.scene.start("GameOver");
+        break;
       case STATUS.IN_PROGRESS:
         this.startEnemyEncounter();
         break;

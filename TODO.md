@@ -9,7 +9,6 @@
 # Bugs
 * Disabled cell tint/alpha is wrong sometimes
 * Fix battleSpeak in Battle scene
-* Fix gameover/end screens
 
 # Game Loop
 1. 3 rounds
