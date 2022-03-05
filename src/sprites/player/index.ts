@@ -1,6 +1,7 @@
 import { shuffle } from "lodash";
 import { Cell } from "..";
 import { CellState } from "../../common";
+import { ACTIONS } from "../../plugins/GameStatePlugin";
 import type { Battle } from "../../scenes/battle";
 import { scale } from "../../scenes/battle/constants";
 
@@ -100,11 +101,8 @@ export class Player extends Phaser.GameObjects.Sprite {
 
       this.scene.cameras.main.shake(250);
     } else {
-      this.scene.scene.transition({
-        target: "GameOver",
-        duration: 0,
-        remove: true,
-      });
+      this.scene.gamestate.dispatch(ACTIONS.PLAYER_DEFEATED);
+      this.scene.scene.start("Controller");
     }
 
     return this.health;

@@ -6,6 +6,7 @@ import { Introduction } from "./scenes/introduction";
 import { Pause } from "./scenes/pause";
 import { Controller } from "./scenes/controller";
 import { GameStatePlugin } from "./plugins/GameStatePlugin";
+import { End } from "./scenes/end";
 
 const config = {
   type: Phaser.AUTO,
@@ -27,7 +28,7 @@ const config = {
       },
     ],
   },
-  scene: [Controller, Battle, Pause, Introduction, GameOver],
+  scene: [Controller, Battle, Pause, Introduction, GameOver, End],
   scale: {
     mode: Phaser.Scale.FIT,
   },

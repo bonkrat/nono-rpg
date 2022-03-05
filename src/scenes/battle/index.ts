@@ -344,15 +344,7 @@ export class Battle extends Phaser.Scene {
 
       this.time.delayedCall(4000, () => {
         this.gamestate.dispatch(ACTIONS.ENEMY_DEFEATED);
-        // this.scene.restart({
-        //   enemyClass: this.gamestate.currentEnemy,
-        //   duration: 0,
-        // });
-        this.scene.transition({
-          target: "Controller",
-          duration: 0,
-          remove: true,
-        });
+        this.scene.start("Controller");
       });
     } else {
       const unfinishedPuzzlesIndexes = this.puzzleSet

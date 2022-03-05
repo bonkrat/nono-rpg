@@ -6,6 +6,13 @@ import { pickRandom } from "../utils";
 
 export const enum ACTIONS {
   ENEMY_DEFEATED = "enemy_defeated",
+  PLAYER_DEFEATED = "player_defeated",
+}
+
+export const enum STATUS {
+  IN_PROGRESS = "in_progress",
+  WON = "won",
+  LOST = "lost",
 }
 
 export class GameStatePlugin extends Phaser.Plugins.BasePlugin {
@@ -29,11 +36,43 @@ export class GameStatePlugin extends Phaser.Plugins.BasePlugin {
     return rounds[roundNum].enemies[enemyNum];
   }
 
+  public get status(): STATUS {
+    return this.data.get("status");
+  }
+
   public dispatch(action: ACTIONS) {
     switch (action) {
       case ACTIONS.ENEMY_DEFEATED:
-        const currentEnemeyNum = this.get("enemyNum");
-        this.set({ enemyNum: currentEnemeyNum + 1 });
+        const { rounds, roundNum, enemyNum } = this.get([
+          "rounds",
+          "roundNum",
+          "enemyNum",
+        ]);
+        const numOfEnemeiesInRound = rounds[roundNum].enemies.length;
+
+        if (enemyNum === numOfEnemeiesInRound - 1) {
+          if (roundNum === rounds.length - 1) {
+            // Game over if last enemy is defeated
+            this.set({
+              status: STATUS.WON,
+            });
+          } else {
+            // Go to next round if last enemy is defeated in this round
+            this.set({
+              roundNum: roundNum + 1,
+              enemyNum: 0,
+            });
+          }
+        } else {
+          // Iterate to next enemy
+          this.set({ enemyNum: enemyNum + 1 });
+        }
+        break;
+
+      case ACTIONS.PLAYER_DEFEATED:
+        this.set({
+          status: STATUS.LOST,
+        });
         break;
 
       default:
@@ -80,8 +119,10 @@ export class GameStatePlugin extends Phaser.Plugins.BasePlugin {
       ],
       roundNum: 0,
       enemyNum: 0,
+      status: STATUS.IN_PROGRESS,
     });
   }
 
   private set currentEnemy(_value: EnemyClass) {}
+  private set status(_value: STATUS) {}
 }

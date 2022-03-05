@@ -128,6 +128,7 @@ interface GameState {
   rounds: GameRound[];
   roundNum: number;
   enemyNum: number;
+  status: import("./plugins/GameStatePlugin").STATUS;
 }
 
 interface GameStateMap
