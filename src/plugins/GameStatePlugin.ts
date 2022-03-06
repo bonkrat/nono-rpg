@@ -1,7 +1,7 @@
 import { times } from "lodash";
 import { smallPuzzles } from "../puzzles";
 import { getRandomBoss } from "../sprites/enemies/helpers";
-import { buildRandomMob } from "../sprites/enemies/Mob";
+import { buildRandomMob, DIFFICULTY } from "../sprites/enemies/Mob";
 import { pickRandom } from "../utils";
 
 export const enum ACTIONS {
@@ -106,21 +106,53 @@ export class GameStatePlugin extends Phaser.Plugins.BasePlugin {
   }
 
   private resetData() {
-    this.set({
-      rounds: [
-        {
-          enemies: [
-            ...(times(1, () =>
-              buildRandomMob({ puzzleSet: [pickRandom(smallPuzzles)] })
-            ) as EnemyClass[]),
-            getRandomBoss(),
-          ],
-        },
-      ],
+    this.set(this.buildInitialState());
+  }
+
+  private buildInitialState(): GameState {
+    const rounds = times(4, (num) => {
+      let difficulty: DIFFICULTY;
+      let puzzles: Puzzle[];
+
+      switch (num) {
+        case 0:
+        default:
+          difficulty = DIFFICULTY.EASY;
+          puzzles = smallPuzzles;
+          break;
+        case 1:
+          difficulty = DIFFICULTY.NORMAL;
+          puzzles = smallPuzzles;
+          break;
+        case 2:
+          difficulty = DIFFICULTY.HARD;
+          puzzles = smallPuzzles;
+          break;
+        case 3:
+          difficulty = DIFFICULTY.NIGHTMARE;
+          puzzles = smallPuzzles;
+          break;
+      }
+
+      return {
+        enemies: [
+          ...(times(3, () =>
+            buildRandomMob({
+              puzzleSet: [pickRandom(puzzles)],
+              difficulty,
+            })
+          ) as EnemyClass[]),
+          getRandomBoss(),
+        ],
+      } as GameRound;
+    });
+
+    return {
+      rounds,
       roundNum: 0,
       enemyNum: 0,
       status: STATUS.IN_PROGRESS,
-    });
+    };
   }
 
   private set currentEnemy(_value: EnemyClass) {}

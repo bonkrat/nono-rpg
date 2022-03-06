@@ -65,7 +65,7 @@ interface EnemyClass
 }
 
 interface MobConfig extends Omit<EnemyClass, Constructor<EnemyClass>> {
-  attack(): Enemy;
+  difficulty: import("./sprites/enemies/Mob").DIFFICULTY;
 }
 
 interface SpriteClass<T extends Phaser.GameObjects.Sprite> {

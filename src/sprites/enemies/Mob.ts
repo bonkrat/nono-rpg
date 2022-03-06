@@ -1,7 +1,16 @@
 import { shuffle } from "lodash";
+import { AttackManager } from "../../classes/AttackManager";
 import { puzzles } from "../../puzzles";
+import { pickRandom } from "../../utils";
 import { Enemy } from "./enemy";
 import { getRandomMobSprite } from "./helpers";
+
+export const enum DIFFICULTY {
+  EASY = "easy",
+  NORMAL = "normal",
+  HARD = "hard",
+  NIGHTMARE = "nightmare",
+}
 
 /**
  * Builder for smaller generic enemies.
@@ -16,7 +25,7 @@ export function buildMob({
   description,
   introduction,
   dialogue,
-  attack,
+  difficulty,
 }: MobConfig) {
   return class Mob extends Enemy {
     static puzzleSet = puzzleSet;
@@ -31,8 +40,45 @@ export function buildMob({
       super(scene);
     }
 
-    public attack(): Enemy {
-      attack();
+    startAttack(): Enemy {
+      let delay: number;
+
+      switch (difficulty) {
+        case DIFFICULTY.EASY:
+          delay = 4000;
+          break;
+        case DIFFICULTY.NORMAL:
+        default:
+          delay = 3000;
+          break;
+        case DIFFICULTY.HARD:
+          delay = 2000;
+          break;
+        case DIFFICULTY.NIGHTMARE:
+          delay = 1500;
+          break;
+      }
+
+      this.attackEvent = this.scene.time.addEvent({
+        startAt: 2000,
+        delay,
+        loop: true,
+        callback: this.attack,
+        callbackScope: this,
+      });
+      return this;
+    }
+
+    attack() {
+      const attack = pickRandom([
+        "randomCellAttack",
+        "randomColumnAttack",
+        "randomRowAttack",
+        "rowAndColumnAttack",
+      ]) as keyof AttackManager;
+
+      (this.attackManager[attack] as () => void).call(this.attackManager);
+
       return this;
     }
 
@@ -44,7 +90,9 @@ export function buildMob({
   };
 }
 
-export function buildRandomMob(config?: Partial<Omit<MobConfig, "assets">>) {
+export function buildRandomMob(
+  config: Partial<Omit<MobConfig, "assets">> & Pick<MobConfig, "difficulty">
+) {
   return buildMob({
     puzzleSet: shuffle(puzzles).slice(0, 1) as PuzzleSet,
     assets: [
@@ -57,7 +105,6 @@ export function buildRandomMob(config?: Partial<Omit<MobConfig, "assets">>) {
     description: "",
     introduction: [],
     dialogue: [],
-    attack: () => {},
     ...config,
   });
 }

@@ -39,6 +39,20 @@ export class AttackManager {
     );
   }
 
+  randomColumnAttack() {
+    const scene = this.scene;
+    scene.nonogram
+      ?.getRandomColumn()
+      .forEach((c, i) => this.tweens.push(this.cellAttack(c, i)));
+  }
+
+  randomRowAttack() {
+    const scene = this.scene;
+    scene.nonogram
+      ?.getRandomRow()
+      .forEach((c, i) => this.tweens.push(this.cellAttack(c, i)));
+  }
+
   /**
    * Attacks a square area of cells all at once.
    * @param radius the radius of the square.
@@ -51,6 +65,12 @@ export class AttackManager {
     scene.nonogram
       .getNeighborCells(radius, centerCell)
       .forEach((c) => this.cellAttack(c));
+  }
+
+  randomCellAttack() {
+    console.log("RANDOM CELL ATTACK");
+    const randomCell = (this.scene as Battle).nonogram.getRandomCell();
+    this.cellAttack(randomCell);
   }
 
   cellAttack(cell: Cell, index = 0) {

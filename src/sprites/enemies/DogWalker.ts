@@ -1,7 +1,6 @@
 import { shuffle } from "lodash";
 import dogwalker from "../../assets/sprites/enemies/dogwalker.png";
 import { puzzles } from "../../puzzles";
-import { Battle } from "../../scenes/battle";
 import { Enemy } from "./enemy";
 
 export class DogWalker extends Enemy {
@@ -27,8 +26,7 @@ export class DogWalker extends Enemy {
   }
 
   attack() {
-    const randomCell = (this.scene as Battle).nonogram.getRandomCell();
-    this.attackManager.cellAttack(randomCell);
+    this.attackManager.randomCellAttack();
     return this;
   }
 
