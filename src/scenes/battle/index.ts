@@ -53,7 +53,7 @@ export class Battle extends Phaser.Scene {
     super("Battle");
   }
 
-  init({ enemyClass }: { enemyClass: EnemyClass }) {
+  init() {
     this.keys = this.input.keyboard.addKeys({
       up: Phaser.Input.Keyboard.KeyCodes.W,
       down: Phaser.Input.Keyboard.KeyCodes.S,
@@ -63,7 +63,7 @@ export class Battle extends Phaser.Scene {
       pause: Phaser.Input.Keyboard.KeyCodes.ESC,
     }) as BattleKeys;
 
-    this.puzzleSet = enemyClass.puzzleSet;
+    this.puzzleSet = this.gamestate.currentEnemy.puzzleSet;
     this.puzzle = this.puzzleSet[0];
     this.currentPuzzleSection = 0;
     this.currentPuzzleIndex = 0;
@@ -92,9 +92,12 @@ export class Battle extends Phaser.Scene {
     this.load.audio("nonogramSound", [nonogramSound]);
   }
 
-  async create({ enemyClass }: { enemyClass: EnemyClass }) {
+  async create() {
     this.nonogramSound = this.sound.add("nonogramSound");
-    this.enemy = (await this.add.enemy(enemyClass)).draw(300, 350);
+    this.enemy = (await this.add.enemy(this.gamestate.currentEnemy)).draw(
+      300,
+      350
+    );
 
     // Create number animations
     for (var i = 0; i < 10; i++) {

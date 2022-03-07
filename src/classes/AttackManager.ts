@@ -68,7 +68,6 @@ export class AttackManager {
   }
 
   randomCellAttack() {
-    console.log("RANDOM CELL ATTACK");
     const randomCell = (this.scene as Battle).nonogram.getRandomCell();
     this.cellAttack(randomCell);
   }

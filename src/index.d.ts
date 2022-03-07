@@ -62,9 +62,11 @@ interface EnemyClass
   description: string;
   dialogue: string[];
   type?: string;
+  key?: string;
 }
 
 interface MobConfig extends Omit<EnemyClass, Constructor<EnemyClass>> {
+  key: string;
   difficulty: import("./sprites/enemies/Mob").DIFFICULTY;
 }
 

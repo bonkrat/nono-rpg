@@ -197,10 +197,12 @@ register(
       [...(EnemyClass.assets || []), ...BASE_ENEMY_ASSETS].map(
         (spriteConfig) => ({ spriteConfig })
       ),
-      EnemyClass.name
+      EnemyClass.key || EnemyClass.name
     );
 
-    Object.defineProperty(LoadableEnemy, "name", { value: EnemyClass.name });
+    Object.defineProperty(LoadableEnemy, "name", {
+      value: EnemyClass.key || EnemyClass.name,
+    });
 
     const enemy = new LoadableEnemy(this.scene);
 

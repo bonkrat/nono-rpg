@@ -1,4 +1,5 @@
 import { shuffle } from "lodash";
+import { mobs } from "../../assets/sprites";
 import { AttackManager } from "../../classes/AttackManager";
 import { puzzles } from "../../puzzles";
 import { pickRandom } from "../../utils";
@@ -26,11 +27,13 @@ export function buildMob({
   introduction,
   dialogue,
   difficulty,
+  key,
 }: MobConfig) {
   return class Mob extends Enemy {
     static puzzleSet = puzzleSet;
     static assets = assets;
     static type = "mob";
+    static key = key;
     displayName = displayName;
     description = description;
     introduction = introduction;
@@ -93,18 +96,23 @@ export function buildMob({
 export function buildRandomMob(
   config: Partial<Omit<MobConfig, "assets">> & Pick<MobConfig, "difficulty">
 ) {
+  const url = getRandomMobSprite();
+  const key = "mob_" + mobs.indexOf(url);
+
   return buildMob({
     puzzleSet: shuffle(puzzles).slice(0, 1) as PuzzleSet,
     assets: [
       {
-        url: getRandomMobSprite(),
+        key,
+        url,
         frameConfig: { frameWidth: 128, frameHeight: 128 },
       },
     ],
-    displayName: "Mob",
+    displayName: key,
     description: "",
     introduction: [],
     dialogue: [],
+    key,
     ...config,
   });
 }
